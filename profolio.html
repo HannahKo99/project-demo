@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>旅伴個人頁（Profile）- Wireframe 範本</title>
+  <style>
+    :root{
+      --bg:#f5f7fb;
+      --card:#ffffff;
+      --muted:#6b7280;
+      --accent:#1f2937;
+      --radius:12px;
+      --gap:20px;
+      --maxw:1200px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: "Segoe UI", Roboto, "Noto Sans TC", system-ui, -apple-system;
+      background:var(--bg);
+      color:var(--accent);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      padding:24px;
+      display:flex;
+      justify-content:center;
+    }
+
+    .container{
+      width:100%;
+      max-width:var(--maxw);
+    }
+
+    /* Header */
+    .user-header{
+      display:flex;
+      align-items:center;
+      gap:16px;
+      background:transparent;
+      margin-bottom:var(--gap);
+    }
+    .avatar{
+      width:96px; height:96px; border-radius:50%;
+      background:linear-gradient(135deg,#e2e8f0,#cbd5e1);
+      display:flex; align-items:center; justify-content:center;
+      color:var(--muted); font-weight:600;
+      flex-shrink:0;
+    }
+    .meta{
+      flex:1;
+    }
+    .meta h1{
+      margin:0;
+      font-size:28px;
+      letter-spacing:0.2px;
+    }
+    .meta .sub{ color:var(--muted); margin-top:6px; }
+
+    .actions{ display:flex; gap:8px; }
+    .btn{
+      background:var(--card);
+      border:1px solid rgba(31,41,55,0.08);
+      padding:10px 14px;
+      border-radius:10px;
+      cursor:pointer;
+      font-weight:600;
+    }
+    .btn.primary{
+      background:#0ea5a4;
+      color:white;
+      border:none;
+    }
+
+    /* layout columns */
+    .profile-main{
+      display:grid;
+      grid-template-columns: 1fr 340px;
+      gap:var(--gap);
+    }
+
+    /* Left column content */
+    .card{ background:var(--card); border-radius:var(--radius); padding:18px; box-shadow:0 6px 18px rgba(15,23,42,0.06);}
+
+    .section-title{
+      font-size:20px; margin:0 0 12px 0;
+    }
+
+    .passport-grid{
+      display:grid;
+      grid-template-columns: repeat(4,1fr);
+      gap:12px;
+    }
+    .passport-item{
+      background:linear-gradient(180deg,#fff,#fbfdff);
+      border-radius:12px;
+      padding:18px;
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      text-align:center;
+      border:1px solid rgba(31,41,55,0.04);
+    }
+    .passport-item .icon{
+      width:48px; height:48px; border-radius:10px;
+      background:linear-gradient(135deg,#eef2ff,#e6f7ff);
+      display:flex;align-items:center;justify-content:center;
+      color:var(--muted); font-weight:700; margin-bottom:8px;
+    }
+    .passport-item small{ color:var(--muted) }
+
+    /* Wish list */
+    .wish-list{ display:flex; flex-direction:column; gap:12px; margin-top:10px;}
+    .wish-card{
+      display:flex; align-items:center; gap:12px;
+      border-radius:12px; padding:14px; border:1px solid rgba(31,41,55,0.04);
+    }
+    .wish-thumb{ width:72px; height:72px; border-radius:10px; background:#eef2ff; display:flex;align-items:center;justify-content:center; color:var(--muted); font-weight:700; flex-shrink:0;}
+    .wish-body{ flex:1; }
+    .wish-title{ font-weight:700; margin:0 0 6px 0; }
+    .wish-meta{ color:var(--muted); font-size:13px; margin:0; }
+    .wish-date{ color:var(--muted); font-weight:700; margin-left:12px; white-space:nowrap; }
+
+    /* wish accordion content (hidden) */
+    .wish-details{ display:none; margin-top:10px; color:var(--muted); font-size:14px; }
+    .wish-open .wish-details{ display:block; }
+
+    /* Persona */
+    .persona{ display:flex; gap:16px; align-items:center; }
+    .persona-avatar{ width:120px; height:120px; border-radius:18px; background:linear-gradient(135deg,#fff7ed,#fff1f0); display:flex;align-items:center;justify-content:center; color:var(--muted); font-weight:700;}
+    .persona-desc{ flex:1; }
+    .persona-desc p{ margin:0 0 8px 0; color:var(--muted); }
+
+    /* quick stats */
+    .quick-stats{ display:flex; gap:12px; margin-bottom:8px; }
+    .stat{ background:#fff; padding:10px 12px; border-radius:12px; display:flex; flex-direction:column; align-items:center; min-width:100px; border:1px solid rgba(31,41,55,0.04); }
+    .stat .num{ font-weight:800; font-size:18px; }
+    .stat .lbl{ color:var(--muted); font-size:13px; }
+
+    /* Footer actions */
+    .footer-actions{ display:flex; gap:8px; margin-top:18px; }
+
+    /* Responsive */
+    @media (max-width:1024px){
+      .profile-main{ grid-template-columns: 1fr; }
+      .passport-grid{ grid-template-columns: repeat(2,1fr); }
+      .persona-avatar{ width:96px; height:96px; }
+    }
+    @media (max-width:480px){
+      body{ padding:12px;}
+      .avatar{ width:72px; height:72px; font-size:12px;}
+      .meta h1{ font-size:20px; }
+      .passport-grid{ grid-template-columns: repeat(2,1fr); gap:8px; }
+      .passport-item{ padding:12px; }
+      .wish-thumb{ width:56px; height:56px;}
+      .person-grid{ grid-template-columns:1fr; }
+    }
+
+    /* small helpers */
+    .muted{ color:var(--muted); font-size:13px;}
+    .tag{ display:inline-block; padding:6px 8px; border-radius:999px; background:#f1f5f9; color:#111827; font-size:13px; margin-right:6px; }
+    .flex{ display:flex; align-items:center; gap:8px; }
+    .row{ display:flex; justify-content:space-between; align-items:center; }
+  </style>
+</head>
+<body>
+  <div class="container" role="main">
+    <!-- Header -->
+    <header class="user-header" aria-label="User header">
+      <div class="avatar" aria-hidden="true">A</div>
+      <div class="meta">
+        <h1>小明的旅伴頁</h1>
+        <div class="sub muted">臺北 • 已驗證</div>
+      </div>
+      <div class="actions">
+        <button class="btn">分享</button>
+        <button class="btn">追蹤</button>
+        <button id="editBtn" class="btn primary">編輯個人資料</button>
+      </div>
+    </header>
+
+    <!-- Main layout -->
+    <div class="profile-main">
+      <!-- LEFT COLUMN -->
+      <div class="left-col">
+        <!-- Travel Passport -->
+        <section class="card" aria-labelledby="passportTitle">
+          <h2 id="passportTitle" class="section-title">Travel Passport</h2>
+          <div class="passport-grid" role="list">
+            <div class="passport-item" role="listitem">
+              <div class="icon">🏳️</div>
+              <small>Been to</small>
+            </div>
+            <div class="passport-item" role="listitem">
+              <div class="icon">🧭</div>
+              <small>Been a guide</small>
+            </div>
+            <div class="passport-item" role="listitem">
+              <div class="icon">💖</div>
+              <small>Favorite</small>
+            </div>
+            <div class="passport-item" role="listitem">
+              <div class="icon">⭐</div>
+              <small>Traveler Rating</small>
+            </div>
+          </div>
+        </section>
+
+        <!-- Wish list -->
+        <section class="card" aria-labelledby="wishTitle" style="margin-top:var(--gap);">
+          <div class="row" style="align-items:center;">
+            <h2 id="wishTitle" class="section-title">Wish List</h2>
+            <button id="newWishBtn" class="btn">新增許願</button>
+          </div>
+
+          <div id="wishList" class="wish-list" aria-live="polite">
+            <!-- wish cards inserted by JS -->
+          </div>
+        </section>
+
+        <!-- Activity / Forum snippets -->
+        <section class="card" style="margin-top:var(--gap);" aria-labelledby="activityTitle">
+          <h2 id="activityTitle" class="section-title">Recent Activity</h2>
+          <p class="muted">最近發言、回覆、按讚會顯示在這裡，鼓勵社群互動。</p>
+        </section>
+      </div>
+
+      <!-- RIGHT COLUMN -->
+      <aside class="right-col">
+        <div class="card">
+          <div class="flex" style="justify-content:space-between;align-items:flex-start;">
+            <h3 class="section-title" style="margin:0;">Travel Persona</h3>
+            <div class="tag">Owl</div>
+          </div>
+
+          <div class="persona" style="margin-top:12px;">
+            <div class="persona-avatar">🦉</div>
+            <div class="persona-desc">
+              <p class="muted">夜貓型旅行者，偏好深度文化體驗與美食。喜歡慢旅、不喜歡匆忙行程。</p>
+              <div style="margin-top:8px;">
+                <span class="tag">美食</span>
+                <span class="tag">文化</span>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top:12px;">
+            <div class="quick-stats">
+              <div class="stat"><div class="num">4.8</div><div class="lbl">Rating</div></div>
+              <div class="stat"><div class="num">23</div><div class="lbl">Trips</div></div>
+              <div class="stat"><div class="num">89</div><div class="lbl">活躍度</div></div>
+            </div>
+            <div class="footer-actions">
+              <button class="btn">查看評價</button>
+              <button class="btn">訊息</button>
+            </div>
+          </div>
+
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <script>
+    // Sample wish data
+    const sampleWishes = [
+      {
+        id: 'w1',
+        title: '北海道賞雪 & 美食行',
+        dateRange: '2025-01-10 - 2025-01-18',
+        type: '滑雪 / 美食',
+        need: 3,
+        current: 1,
+        description: '希望找會滑雪且愛吃海鮮的旅伴，偏好半自由行。'
+      },
+      {
+        id: 'w2',
+        title: '京都櫻花慢遊',
+        dateRange: '2025-03-25 - 2025-04-02',
+        type: '文化 / 美食',
+        need: 2,
+        current: 0,
+        description: '想找有打卡景點經驗的夥伴，行程偏慢節奏。'
+      },
+      {
+        id: 'w3',
+        title: '沖繩潛水周末',
+        dateRange: '2025-06-10 - 2025-06-14',
+        type: '潛水 / 海島',
+        need: 4,
+        current: 2,
+        description: '有潛水證更佳，行程可能含一日晚宴。'
+      }
+    ];
+
+    const wishListEl = document.getElementById('wishList');
+
+    function renderWishes(){
+      wishListEl.innerHTML = '';
+      sampleWishes.forEach((w, idx) => {
+        const card = document.createElement('article');
+        card.className = 'wish-card';
+        card.setAttribute('data-id', w.id);
+
+        card.innerHTML = `
+          <div class="wish-thumb" aria-hidden="true">📍</div>
+          <div class="wish-body">
+            <div class="row">
+              <h4 class="wish-title">${w.title}</h4>
+              <div class="wish-date">${w.dateRange}</div>
+            </div>
+            <p class="wish-meta">${w.type} • 需要 ${w.need} 人 • 已 ${w.current} 人</p>
+            <div class="wish-details" id="details-${w.id}">
+              <p style="margin:8px 0 0 0;">${w.description}</p>
+              <div style="margin-top:8px; display:flex; gap:8px;">
+                <button class="btn" onclick="joinWish('${w.id}')">加入配對</button>
+                <button class="btn" onclick="toggleDetails('${w.id}')">收合</button>
+              </div>
+            </div>
+          </div>
+        `;
+
+        // make initial collapsed
+        card.querySelector('.wish-details').style.display = 'none';
+
+        // clicking anywhere on card expands
+        card.addEventListener('click', (e) => {
+          // avoid toggling when clicking buttons
+          if(e.target.tagName.toLowerCase() === 'button') return;
+          toggleDetails(w.id);
+        });
+
+        wishListEl.appendChild(card);
+      });
+    }
+
+    function toggleDetails(id){
+      const details = document.getElementById('details-' + id);
+      if(!details) return;
+      const isOpen = details.style.display !== 'none';
+      details.style.display = isOpen ? 'none' : 'block';
+    }
+
+    function joinWish(id){
+      const w = sampleWishes.find(x => x.id === id);
+      if(!w) return alert('找不到該許願!');
+      if(w.current >= w.need) return alert('此許願已滿人數');
+      w.current++;
+      alert(`已加入 ${w.title}（目前 ${w.current}/${w.need}）`);
+      renderWishes();
+    }
+
+    // new wish button
+    document.getElementById('newWishBtn').addEventListener('click', () => {
+      const title = prompt('許願標題 (範例：東京美食三日遊)');
+      if(!title) return;
+      sampleWishes.unshift({
+        id: 'w' + Math.random().toString(36).slice(2,9),
+        title,
+        dateRange: '靈活日期',
+        type: '自訂',
+        need: 2,
+        current: 0,
+        description: '使用者新增的許願'
+      });
+      renderWishes();
+      window.scrollTo({top:0, behavior:'smooth'});
+    });
+
+    // edit profile toggle (simple demo)
+    const editBtn = document.getElementById('editBtn');
+    let editing = false;
+    editBtn.addEventListener('click', () => {
+      editing = !editing;
+      editBtn.textContent = editing ? '完成編輯' : '編輯個人資料';
+      editBtn.classList.toggle('primary', editing);
+      alert(editing ? '進入編輯模式（示範）' : '離開編輯模式');
+    });
+
+    // initial render
+    renderWishes();
+  </script>
+</body>
+</html>

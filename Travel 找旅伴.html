@@ -1,0 +1,3798 @@
+<!doctype html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TripMate - 旅遊社群平台</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icon Library for modern, clean icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+      /* Custom scrollbar for better aesthetics and less visual clutter */
+      .custom-scrollbar::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb {
+        background-color: #cbd5e1;
+        border-radius: 3px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-track {
+        background-color: transparent;
+      }
+
+      /* 側邊欄樣式 */
+      .aside-nav {
+        border: 2px solid #1f2937; /* gray-800 */
+      }
+      .nav-item:hover {
+        background-color: #f3f4f6;
+        transform: translateX(4px);
+      }
+      .nav-item.active {
+        background-color: #e0f2fe;
+        border-right: 4px solid #0ea5e9;
+      }
+      .nav-item {
+        transition: all 0.2s;
+      }
+
+      /* Drag and Drop Styling */
+      .activity-item:hover .activity-content {
+        /* Subtle hover state for draggable items */
+        background-color: #f0f9ff; /* blue-50 */
+      }
+      .activity-item.opacity-30 {
+        opacity: 0.3; /* Visual cue when dragging */
+      }
+      .activity-item.drag-target .activity-content {
+        border: 2px dashed #6366f1; /* indigo-500 dashed border for drop target */
+        padding-top: 10px;
+        padding-bottom: 10px;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-50 font-sans custom-scrollbar">
+    <!-- Header (Fixed Top Navigation) -->
+    <header
+      class="fixed top-0 left-0 right-0 bg-white shadow-md z-50 h-16 flex items-center px-4"
+    >
+      <div
+        onclick="navigate('home')"
+        class="cursor-pointer flex items-center space-x-2 mr-8"
+      >
+        <!-- Logo：使用紙飛機圖示 (navigation-2) 代表旅行 -->
+        <i
+          data-lucide="navigation-2"
+          class="w-8 h-8 text-indigo-600 fill-indigo-600 transform rotate-45"
+        ></i>
+        <span class="text-2xl font-black text-gray-800 tracking-tight"
+          >TripMate</span
+        >
+      </div>
+      <!-- Search Bar (Desktop) -->
+      <div class="hidden lg:flex flex-1 max-w-xl relative">
+        <input
+          type="text"
+          placeholder="搜尋文章、行程..."
+          class="w-full py-2 pl-4 pr-10 border-2 border-gray-200 rounded-full focus:border-indigo-500 focus:outline-none transition"
+        />
+        <i
+          data-lucide="search"
+          class="absolute right-3 top-2.5 w-5 h-5 text-gray-400"
+        ></i>
+      </div>
+      <!-- User Actions (Notifications, Cart, Profile, Mobile Menu) -->
+      <div class="flex items-center space-x-3 ml-auto">
+        <button class="p-2 hover:bg-gray-100 rounded-full">
+          <i data-lucide="bell" class="w-6 h-6 text-gray-600"></i>
+        </button>
+        <button
+          onclick="navigate('cart')"
+          class="p-2 hover:bg-gray-100 rounded-full"
+        >
+          <i data-lucide="shopping-cart" class="w-6 h-6 text-gray-600"></i>
+        </button>
+        <button
+          onclick="navigate('profile')"
+          class="p-2 hover:bg-gray-100 rounded-full"
+        >
+          <i data-lucide="user" class="w-6 h-6 text-gray-600"></i>
+        </button>
+        <button class="p-2 hover:bg-gray-100 rounded-full lg:hidden">
+          <i data-lucide="menu" class="w-6 h-6 text-gray-600"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Layout Container -->
+    <div class="flex pt-20 px-4 max-w-[1600px] mx-auto min-h-screen">
+      <!-- Aside Nav (Left Sidebar - Desktop Only) -->
+      <aside
+        class="fixed left-4 top-20 w-64 bg-white rounded-[2rem] shadow-xl p-4 hidden lg:flex flex-col z-40 h-[calc(100vh-6rem)] custom-scrollbar overflow-y-auto aside-nav"
+      >
+        <!-- Top Actions: Favorites and Collections -->
+        <div class="flex justify-between mb-4 pb-4 border-b-2 border-gray-100">
+          <div
+            onclick="navigate('favorites')"
+            class="cursor-pointer w-[48%] aspect-square rounded-2xl border-2 border-gray-800 flex flex-col items-center justify-center hover:bg-red-50 transition group"
+          >
+            <i
+              data-lucide="heart"
+              class="w-8 h-8 text-gray-400 group-hover:text-red-500 transition fill-transparent group-hover:fill-red-500"
+            ></i>
+            <span class="text-xs font-bold mt-1 text-gray-600">愛心</span>
+          </div>
+          <div
+            onclick="navigate('collections')"
+            class="cursor-pointer w-[48%] aspect-square rounded-2xl border-2 border-gray-800 flex flex-col items-center justify-center hover:bg-yellow-50 transition group"
+          >
+            <i
+              data-lucide="bookmark"
+              class="w-8 h-8 text-gray-400 group-hover:text-yellow-500 transition fill-transparent group-hover:fill-yellow-500"
+            ></i>
+            <span class="text-xs font-bold mt-1 text-gray-600">收藏</span>
+          </div>
+        </div>
+
+        <!-- Nav List -->
+        <nav class="space-y-1">
+          <a
+            onclick="navigate('home')"
+            id="nav-home"
+            class="nav-item flex items-center p-3 rounded-xl cursor-pointer"
+          >
+            <i
+              data-lucide="pin"
+              class="w-5 h-5 text-red-500 mr-3 fill-red-500 transform rotate-45"
+            ></i>
+            <span class="font-bold text-gray-700">為你推薦</span>
+          </a>
+          <a
+            onclick="navigate('discussion')"
+            id="nav-discussion"
+            class="nav-item flex items-center p-3 rounded-xl cursor-pointer"
+          >
+            <i
+              data-lucide="pin"
+              class="w-5 h-5 text-red-500 mr-3 fill-red-500 transform rotate-45"
+            ></i>
+            <span class="font-bold text-gray-700">討論區</span>
+          </a>
+          <a
+            onclick="navigate('find_traveler')"
+            id="nav-find_traveler"
+            class="nav-item flex items-center p-3 rounded-xl cursor-pointer"
+          >
+            <i
+              data-lucide="pin"
+              class="w-5 h-5 text-red-500 mr-3 fill-red-500 transform rotate-45"
+            ></i>
+            <span class="font-bold text-gray-700">找旅伴</span>
+          </a>
+          <a
+            onclick="navigate('featured_itinerary')"
+            id="nav-featured_itinerary"
+            class="nav-item flex items-center p-3 rounded-xl cursor-pointer"
+          >
+            <i
+              data-lucide="pin"
+              class="w-5 h-5 text-red-500 mr-3 fill-red-500 transform rotate-45"
+            ></i>
+            <span class="font-bold text-gray-700">精選行程</span>
+          </a>
+          <div class="my-2 border-t-2 border-dashed border-gray-200"></div>
+          <a
+            onclick="navigate('my_itinerary')"
+            id="nav-my_itinerary"
+            class="nav-item flex items-center p-3 rounded-xl cursor-pointer"
+          >
+            <i
+              data-lucide="pin"
+              class="w-5 h-5 text-red-500 mr-3 fill-red-500 transform rotate-45"
+            ></i>
+            <span class="font-bold text-gray-700">我的行程</span>
+          </a>
+          <!-- Future Feature Placeholders -->
+          <a
+            onclick="openModal('future_feature')"
+            class="nav-item flex items-center p-3 rounded-xl cursor-pointer hover:opacity-70"
+          >
+            <i
+              data-lucide="pin"
+              class="w-5 h-5 text-gray-400 mr-3 transform rotate-45"
+            ></i>
+            <span class="font-bold text-gray-400">許願池</span>
+          </a>
+          <a
+            onclick="toggleChatWindow()"
+            class="nav-item flex items-center p-3 rounded-xl cursor-pointer hover:opacity-70"
+          >
+            <i
+              data-lucide="pin"
+              class="w-5 h-5 text-gray-400 mr-3 transform rotate-45"
+            ></i>
+            <span class="font-bold text-gray-900">需要指引</span>
+          </a>
+        </nav>
+      </aside>
+
+      <!-- Main Content Area -->
+      <main id="main-content" class="lg:ml-72 w-full pb-20">
+        <!-- Content will be rendered here by JavaScript -->
+      </main>
+    </div>
+
+    <!-- Floating Action Buttons (FABs) -->
+    <div class="fixed bottom-8 right-8 flex flex-col space-y-3 z-50">
+      <!-- Post/Create Button -->
+      <button
+        onclick="openModal('posting_choice')"
+        class="p-4 bg-indigo-600 text-white rounded-full shadow-lg hover:bg-indigo-700 transition hover:scale-110"
+      >
+        <i data-lucide="plus" class="w-6 h-6"></i>
+      </button>
+      <!-- Quick Action (e.g., Quick Plan) -->
+      <button
+        class="p-4 bg-amber-500 text-white rounded-full shadow-lg hover:bg-amber-600 transition hover:scale-110"
+      >
+        <i data-lucide="zap" class="w-6 h-6"></i>
+      </button>
+      <!-- Chat/Message Button -->
+      <button
+        onclick="togglePrivateChatWindow()"
+        class="p-4 bg-green-500 text-white rounded-full shadow-lg hover:bg-green-600 transition hover:scale-110"
+      >
+        <i data-lucide="message-square" class="w-6 h-6"></i>
+      </button>
+      <!-- AI Assistant Button -->
+      <button
+        onclick="toggleChatWindow()"
+        class="p-4 bg-orange-500 text-white rounded-full shadow-lg hover:bg-orange-600 transition hover:scale-110"
+      >
+        <i data-lucide="bot" class="w-6 h-6"></i>
+      </button>
+    </div>
+
+    <!-- Modal Container -->
+    <div
+      id="modal-container"
+      class="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] hidden flex items-center justify-center p-4"
+    ></div>
+
+    <!-- Chat Window (Fixed Bottom Right) -->
+    <div
+      id="chat-window"
+      class="fixed bottom-24 right-8 w-96 h-[600px] bg-white rounded-2xl shadow-2xl z-50 hidden flex flex-col border-4 border-gray-800"
+    >
+      <!-- Chat Header -->
+      <div
+        class="bg-orange-500 text-white p-4 rounded-t-xl flex items-center justify-between"
+      >
+        <div class="flex items-center space-x-3">
+          <i data-lucide="bot" class="w-6 h-6"></i>
+          <div>
+            <h3 class="font-bold text-lg">TripMate 助手</h3>
+            <p class="text-xs text-orange-100">隨時為您提供旅遊指引</p>
+          </div>
+        </div>
+        <button
+          onclick="toggleChatWindow()"
+          class="p-2 hover:bg-orange-600 rounded-full transition"
+        >
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Chat Messages Area -->
+      <div
+        id="chat-messages"
+        class="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar bg-gray-50"
+      >
+        <!-- Welcome Message -->
+        <div class="flex items-start space-x-2">
+          <div
+            class="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center flex-shrink-0"
+          >
+            <i data-lucide="bot" class="w-5 h-5 text-white"></i>
+          </div>
+          <div
+            class="bg-white rounded-2xl rounded-tl-sm p-3 shadow-sm max-w-[80%]"
+          >
+            <p class="text-sm text-gray-800">
+              您好！我是 TripMate 助手，很高興為您服務！
+            </p>
+            <p class="text-sm text-gray-800 mt-2">我可以協助您：</p>
+            <ul
+              class="text-sm text-gray-700 mt-2 space-y-1 list-disc list-inside"
+            >
+              <li>規劃旅遊行程</li>
+              <li>推薦景點與美食</li>
+              <li>解答旅遊相關問題</li>
+              <li>提供實用旅遊建議</li>
+            </ul>
+            <p class="text-sm text-gray-800 mt-2">請告訴我您需要什麼協助？</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chat Input Area -->
+      <div class="p-4 border-t border-gray-200 bg-white rounded-b-xl">
+        <form
+          id="chat-form"
+          onsubmit="event.preventDefault(); sendChatMessage();"
+          class="flex items-center space-x-2"
+        >
+          <input
+            type="text"
+            id="chat-input"
+            placeholder="輸入您的問題..."
+            class="flex-1 px-4 py-2 border-2 border-gray-300 rounded-full focus:border-orange-500 focus:outline-none text-sm"
+            autocomplete="off"
+          />
+          <button
+            type="submit"
+            class="p-2 bg-orange-500 text-white rounded-full hover:bg-orange-600 transition"
+          >
+            <i data-lucide="send" class="w-5 h-5"></i>
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Private Chat Window (Fixed Bottom Right) -->
+    <div
+      id="private-chat-window"
+      class="fixed bottom-24 right-8 w-96 h-[600px] bg-white rounded-2xl shadow-2xl z-50 hidden flex flex-col border-4 border-gray-800"
+    >
+      <!-- Chat Header -->
+      <div
+        class="bg-green-500 text-white p-4 rounded-t-xl flex items-center justify-between"
+      >
+        <div class="flex items-center space-x-3">
+          <i data-lucide="message-square" class="w-6 h-6"></i>
+          <div>
+            <h3 class="font-bold text-lg">私人聊天</h3>
+            <p class="text-xs text-green-100">與好友聊天</p>
+          </div>
+        </div>
+        <button
+          onclick="togglePrivateChatWindow()"
+          class="p-2 hover:bg-green-600 rounded-full transition"
+        >
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Chat Messages Area -->
+      <div
+        id="private-chat-messages"
+        class="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar bg-gray-50"
+      >
+        <!-- Welcome Message -->
+        <div class="flex items-start space-x-2">
+          <div
+            class="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0"
+          >
+            <i data-lucide="message-square" class="w-5 h-5 text-white"></i>
+          </div>
+          <div
+            class="bg-white rounded-2xl rounded-tl-sm p-3 shadow-sm max-w-[80%]"
+          >
+            <p class="text-sm text-gray-800">歡迎來到私人聊天室！</p>
+            <p class="text-sm text-gray-800 mt-2">
+              您可以在這裡與其他用戶進行私人對話。
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chat Input Area -->
+      <div class="p-4 border-t border-gray-200 bg-white rounded-b-xl">
+        <form
+          id="private-chat-form"
+          onsubmit="event.preventDefault(); sendPrivateChatMessage();"
+          class="flex items-center space-x-2"
+        >
+          <input
+            type="text"
+            id="private-chat-input"
+            placeholder="輸入訊息..."
+            class="flex-1 px-4 py-2 border-2 border-gray-300 rounded-full focus:border-green-500 focus:outline-none text-sm"
+            autocomplete="off"
+          />
+          <button
+            type="submit"
+            class="p-2 bg-green-500 text-white rounded-full hover:bg-green-600 transition"
+          >
+            <i data-lucide="send" class="w-5 h-5"></i>
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <script>
+      // App State & Mock Data
+      const appState = {
+        currentPage: "home",
+        mockPosts: [
+          {
+            id: 1,
+            type: "find_traveler",
+            title: "北海道賞雪之旅徵同行夥伴",
+            content:
+              "第一次去北海道，想找人一起分攤住宿費，目前鎖定在札幌、小樽一帶。希望找到個性開朗、能一起規劃行程的旅伴，行程預計5天。",
+            author: "Jovi",
+            avatar: "https://placehold.co/100x100/A0BFFF/ffffff?text=J",
+            image:
+              "https://placehold.co/800x400/5E8FF9/ffffff?text=Hokkaido+Snow+Scenery",
+            time: "5小時前",
+            comments: 6,
+            hearts: 12,
+            tags: ["日本", "北海道", "雪景"],
+            participants: 2,
+            required: 4,
+            location: "札幌",
+            date: "2025/12/15",
+            spiritAnimal: "🦁 樂天派",
+          },
+          {
+            id: 2,
+            type: "find_traveler",
+            title: "歐洲自助40天行程請益",
+            content:
+              "第一次去歐洲想走義法瑞奧，已經安排好大致路線，求神人幫忙檢查或推薦私房景點！",
+            author: "小雨",
+            avatar: "https://placehold.co/100x100/F9D05F/ffffff?text=R",
+            image:
+              "https://placehold.co/800x400/F9A05F/ffffff?text=Europe+Trip",
+            time: "1天前",
+            comments: 15,
+            hearts: 30,
+            tags: ["歐洲", "自助旅行"],
+            participants: 1,
+            required: 1,
+            location: "巴黎",
+            date: "2026/06/01",
+            spiritAnimal: "🦉 觀察家",
+          },
+          {
+            id: 3,
+            type: "find_traveler",
+            title: "台灣環島尋找攝影師旅伴",
+            content:
+              "想找一位喜歡攝影的旅伴一起騎車環島，從東部開始出發，拍下美麗的台灣風景。",
+            author: "阿光",
+            avatar: "https://placehold.co/100x100/A8FFC0/333333?text=K",
+            image:
+              "https://placehold.co/800x400/7CFFD4/333333?text=Taiwan+Round+Island",
+            time: "2天前",
+            comments: 3,
+            hearts: 8,
+            tags: ["台灣", "攝影"],
+            participants: 1,
+            required: 2,
+            location: "台東",
+            date: "2025/10/01",
+            spiritAnimal: "🦅 冒險王",
+          },
+          {
+            id: 4,
+            type: "discussion",
+            title: "#國外遊記 #日本遊記 瀨戶內海之旅 PART1",
+            content:
+              "第一次發文分享旅遊心得，有點緊張...\n\n這次去了瀨戶內海，真的是個很美的地方！第一次規劃這麼長的行程，很擔心會出什麼差錯，但最後還是順利完成了。\n\n想問問大家，最近想嘗試獨自旅行，請問大家有推薦哪個國家比較安全、對單身女性友善的嗎？",
+            author: "史努比",
+            avatar: "https://placehold.co/100x100/FFB6C1/ffffff?text=S",
+            image:
+              "https://placehold.co/800x400/5F5FF9/ffffff?text=Seto+Inland+Sea+Trip",
+            time: "昨天 16:50",
+            comments: 3,
+            hearts: 12,
+            tags: ["國外遊記", "日本遊記"],
+            spiritAnimal: "🐺 獨行者",
+            isAuthor: true,
+          },
+          {
+            id: 5,
+            type: "find_traveler",
+            title: "12月北海道賞雪之旅",
+            content:
+              "找人一起分攤住宿費，佛系旅遊，主要行程還未定，有興趣的可以私訊討論。",
+            author: "雪人",
+            avatar: "https://placehold.co/100x100/D0FFFF/333333?text=SN",
+            image:
+              "https://placehold.co/800x400/AAAAAA/ffffff?text=Hokkaido+Winter",
+            time: "1h",
+            comments: 5,
+            hearts: 5,
+            tags: ["佛系", "北海道"],
+            participants: 0,
+            required: 1,
+            location: "北海道",
+            date: "12/01",
+            spiritAnimal: "🐧 慢活者",
+          },
+          {
+            id: 6,
+            type: "find_traveler",
+            title: "京都賞楓攝影團",
+            content:
+              "想在京都找一個喜歡攝影的朋友互相幫忙拍美照，風景照為主，缺模特兒互拍，時間彈性。",
+            author: "阿杰",
+            avatar: "https://placehold.co/100x100/FFC0A8/333333?text=AJ",
+            image:
+              "https://placehold.co/800x400/F08080/ffffff?text=Kyoto+Autumn+Leaves",
+            time: "3h",
+            comments: 4,
+            hearts: 10,
+            tags: ["攝影", "京都"],
+            participants: 1,
+            required: 2,
+            location: "京都",
+            date: "11/15",
+            spiritAnimal: "🦊 藝術家",
+          },
+          {
+            id: 7,
+            type: "find_traveler",
+            title: "曼谷美食爆食團",
+            content:
+              "目標吃遍曼谷夜市、米其林小吃！歡迎對吃有熱情的夥伴加入，不計較形象。",
+            author: "吃貨",
+            avatar: "https://placehold.co/100x100/FFC0FF/333333?text=EAT",
+            image:
+              "https://placehold.co/800x400/F9D05F/333333?text=Bangkok+Food+Tour",
+            time: "6h",
+            comments: 8,
+            hearts: 20,
+            tags: ["美食", "泰國"],
+            participants: 2,
+            required: 4,
+            location: "曼谷",
+            date: "10/10",
+            spiritAnimal: "🐼 美食家",
+          },
+          {
+            id: 8,
+            type: "featured_itinerary",
+            title: "義大利深度10日遊：羅馬、佛羅倫斯",
+            content:
+              "這是一個經過驗證的高評分行程，涵蓋羅馬競技場、梵蒂岡、以及佛羅倫斯文藝復興藝術之旅。每日詳細行程與預算分析已內附。",
+            author: "TripMate 精選",
+            avatar: "https://placehold.co/100x100/5C6BC0/ffffff?text=TM",
+            image: "https://placehold.co/800x400/9C27B0/ffffff?text=Italy+Tour",
+            time: "2週前",
+            comments: 50,
+            hearts: 150,
+            tags: ["歐洲", "文化", "10天"],
+            rating: 4.8,
+            spiritAnimal: "🤖 系統推薦",
+          },
+          {
+            id: 9,
+            type: "featured_itinerary",
+            title: "東京購物美食五天四夜",
+            content:
+              "從澀谷、新宿到銀座的購物天堂，再到築地市場和米其林美食探險。這個行程是為購物狂和美食家量身定做。",
+            author: "旅遊達人 Mandy",
+            avatar: "https://placehold.co/100x100/FF5722/ffffff?text=M",
+            image: "https://placehold.co/800x400/FF5722/ffffff?text=Tokyo+Food",
+            time: "1個月前",
+            comments: 80,
+            hearts: 210,
+            tags: ["亞洲", "美食", "購物", "5天"],
+            rating: 4.5,
+            spiritAnimal: "🦋 追夢人",
+          },
+          {
+            id: 10,
+            type: "featured_itinerary",
+            title: "冰島環島自駕七日：追尋極光與冰河湖",
+            content:
+              "最受歡迎的冰島自駕路線，涵蓋黃金圈、南部海岸、冰河湖等經典景點，並提供最佳極光觀測點建議。",
+            author: "極光探險家",
+            avatar: "https://placehold.co/100x100/2196F3/ffffff?text=E",
+            image:
+              "https://placehold.co/800x400/2196F3/ffffff?text=Iceland+Road+Trip",
+            time: "3個月前",
+            comments: 120,
+            hearts: 350,
+            tags: ["戶外", "自駕", "極光", "7天"],
+            rating: 4.9,
+            spiritAnimal: "🧭 探險家",
+          },
+        ],
+        // Mock data for "My Itinerary" page
+        mockItineraries: [
+          {
+            id: "i1",
+            title: "台北美食五日遊",
+            startDate: "2024.12.20",
+            endDate: "2024.12.24",
+            status: "upcoming",
+            days: [
+              {
+                date: "Day 1 (12/20)",
+                activities: [
+                  {
+                    time: "09:00",
+                    icon: "camera",
+                    name: "台北 101",
+                    description: "參觀台北 101，體驗城市文化",
+                  },
+                  {
+                    time: "12:00",
+                    icon: "coffee",
+                    name: "鼎泰豐午餐",
+                    description: "在鼎泰豐享用午餐",
+                  },
+                  {
+                    time: "15:00",
+                    icon: "map-pin",
+                    name: "象山步道",
+                    description: "登上象山飽覽台北全景",
+                  },
+                ],
+              },
+              {
+                date: "Day 2 (12/21)",
+                activities: [
+                  {
+                    time: "10:00",
+                    icon: "train",
+                    name: "西門町",
+                    description: "搭乘捷運前往西門町",
+                  },
+                  {
+                    time: "11:30",
+                    icon: "shopping-bag",
+                    name: "西門町購物",
+                    description: "在西門町商圈逛街",
+                  },
+                  {
+                    time: "18:00",
+                    icon: "utensils",
+                    name: "寧夏夜市晚餐",
+                    description: "體驗寧夏夜市美食文化",
+                  },
+                ],
+              },
+              {
+                date: "Day 3 (12/22)",
+                activities: [
+                  {
+                    time: "10:00",
+                    icon: "mountain",
+                    name: "九份一日遊",
+                    description: "參加九份/平溪周邊景點一日遊",
+                  },
+                  {
+                    time: "20:00",
+                    icon: "bed",
+                    name: "回飯店休息",
+                    description: "準備隔日行程",
+                  },
+                ],
+              },
+            ],
+            packingList: [
+              {
+                category: "證件",
+                items: [
+                  { name: "護照", checked: true },
+                  { name: "機票", checked: true },
+                ],
+              },
+              {
+                category: "衣物",
+                items: [
+                  { name: "換洗衣物", checked: false },
+                  { name: "保暖外套", checked: true },
+                ],
+              },
+              {
+                category: "電子產品",
+                items: [
+                  { name: "相機", checked: false },
+                  { name: "充電器", checked: true },
+                ],
+              },
+              {
+                category: "個人用品",
+                items: [
+                  { name: "藥品", checked: false },
+                  { name: "防曬乳", checked: false },
+                ],
+              },
+            ],
+          },
+          {
+            id: "i2",
+            title: "京都賞楓之旅",
+            startDate: "2025.01.15",
+            endDate: "2025.01.18",
+            status: "past",
+          },
+          // i3 沒有 packingList 數據，這正是可能導致錯誤的原因
+          {
+            id: "i3",
+            title: "紐約跨年七日",
+            startDate: "2025.12.28",
+            endDate: "2026.01.03",
+            status: "planning",
+          },
+        ],
+        mockDrafts: [
+          {
+            type: "discussion",
+            title: "詢問日本超商問題",
+            savedAt: "2024-12-05 14:30",
+            contentPreview: "下個月要去日本東京自由行，想在那邊買大研特拿...",
+          },
+          {
+            type: "find_traveler",
+            title: "徵求春天北海道旅伴",
+            savedAt: "2024-12-04 10:15",
+            contentPreview: "計畫明年4月去北海道賞櫻，想找志同道合的旅伴...",
+          },
+        ],
+        currentUser: {
+          name: "森林鹿",
+          avatar: "https://placehold.co/100x100/90EE90/333333?text=User",
+        },
+        // Favorites list (stored post IDs)
+        favorites: [],
+        // Liked posts list (stored post IDs) - separate from favorites
+        likedPosts: [],
+        // Editing itinerary state
+        editingItinerary: null,
+        currentEditDayIndex: 0,
+        // Mock comments data for posts
+        mockComments: {
+          4: [
+            {
+              id: "c1",
+              author: "史努比",
+              avatar: "https://placehold.co/100x100/FFB6C1/ffffff?text=S",
+              time: "3小時前",
+              content: "好的,謝謝指教~可以看清楚文章再來炮!",
+              likes: 5,
+              isAuthor: true,
+              replies: [
+                {
+                  id: "r1",
+                  author: "yuan",
+                  avatar: "https://placehold.co/100x100/FFD700/333333?text=Y",
+                  time: "2小時前",
+                  content: "回覆史努比：完全同意你的觀點！",
+                  likes: 2,
+                  spiritAnimal: "黃金獵犬",
+                },
+              ],
+            },
+            {
+              id: "c2",
+              author: "ihs;oaihoj",
+              avatar: "https://placehold.co/100x100/87CEEB/333333?text=I",
+              time: "5小時前",
+              content: "日本真的很適合單獨旅行，治安很好！",
+              likes: 8,
+              replies: [],
+            },
+            {
+              id: "c3",
+              author: "kawanana",
+              avatar: "https://placehold.co/100x100/98FB98/333333?text=K",
+              time: "1天前",
+              content: "推薦冰島和紐西蘭，都很安全且風景優美！",
+              likes: 12,
+              replies: [],
+            },
+          ],
+        },
+        currentPostId: null, // Track which post detail is being viewed
+        commentSort: "hot", // "hot", "newest", "oldest"
+      };
+
+      // Global state for Drag and Drop
+      let draggedActivityData = null; // Stores the data of the currently dragged activity
+      let dragSourceElement = null; // Stores the DOM element being dragged
+
+      // --- Drag and Drop Handlers ---
+
+      function handleDragStart(e) {
+        // 1. 設置拖曳數據 (用於識別活動)
+        draggedActivityData = {
+          itineraryId: e.currentTarget.dataset.itineraryId,
+          dayIndex: parseInt(e.currentTarget.dataset.dayIndex),
+          activityIndex: parseInt(e.currentTarget.dataset.activityIndex),
+        };
+
+        dragSourceElement = e.currentTarget;
+
+        // 必須設定 dataTransfer 才能觸發 drop 事件
+        e.dataTransfer.setData(
+          "text/plain",
+          JSON.stringify(draggedActivityData)
+        );
+        e.dataTransfer.effectAllowed = "move";
+
+        // 2. 加入視覺效果：半透明
+        setTimeout(() => {
+          e.currentTarget.classList.add("opacity-30");
+        }, 0);
+      }
+
+      function handleDragOver(e) {
+        e.preventDefault(); // 允許放下操作
+        e.dataTransfer.dropEffect = "move";
+
+        const target = e.currentTarget;
+        const isActivityItem = target.classList.contains("activity-item");
+
+        // 加入視覺指標到潛在的放置目標
+        if (isActivityItem && target !== dragSourceElement) {
+          target.classList.add("drag-target");
+        }
+      }
+
+      function handleDragLeave(e) {
+        // 移除視覺指標
+        e.currentTarget.classList.remove("drag-target");
+      }
+
+      function handleDrop(e) {
+        e.preventDefault();
+        const dropTarget = e.currentTarget;
+
+        // 移除所有視覺指標
+        document.querySelectorAll(".activity-item").forEach((item) => {
+          item.classList.remove("drag-target");
+        });
+
+        if (dragSourceElement !== dropTarget && draggedActivityData) {
+          const targetItineraryId = dropTarget.dataset.itineraryId;
+          const targetDayIndex = parseInt(dropTarget.dataset.dayIndex);
+          const targetActivityIndex = parseInt(
+            dropTarget.dataset.activityIndex
+          );
+
+          // 檢查是否在同一天內拖曳
+          if (
+            draggedActivityData.itineraryId === targetItineraryId &&
+            draggedActivityData.dayIndex === targetDayIndex
+          ) {
+            const itinerary = appState.mockItineraries.find(
+              (i) => i.id === targetItineraryId
+            );
+            const activities = itinerary.days[targetDayIndex].activities;
+
+            const draggedIndex = draggedActivityData.activityIndex;
+            const dropIndex = targetActivityIndex;
+
+            // --- NEW LOGIC: Time Slot Shift ---
+
+            // 1. 儲存所有活動的原始時間順序
+            const originalTimes = activities.map((activity) => activity.time);
+
+            // 2. 執行資料陣列中的移動操作 (活動物件本身被移動)
+            // splice(start, deleteCount) returns an array containing the deleted elements.
+            const [movedActivity] = activities.splice(draggedIndex, 1);
+            // splice(start, deleteCount, item1, item2, ...)
+            activities.splice(dropIndex, 0, movedActivity);
+
+            // 3. 重新分配時間：將原始時間順序賦予給新的活動列表
+            // 這樣一來，時間就會跟隨「位置/時段」移動
+            activities.forEach((activity, index) => {
+              activity.time = originalTimes[index];
+            });
+
+            // --- END NEW LOGIC ---
+
+            // 重新渲染該天的行程以顯示更新後的順序和時間
+            switchItineraryDay(targetItineraryId, targetDayIndex);
+          } else {
+            console.warn("目前僅支援同一天的活動拖曳。");
+          }
+        }
+
+        // 清除拖曳狀態
+        draggedActivityData = null;
+        dragSourceElement = null;
+      }
+
+      function handleDragEnd(e) {
+        // 移除半透明效果
+        e.currentTarget.classList.remove("opacity-30");
+
+        // 確保所有放置目標的樣式都被清除
+        document.querySelectorAll(".activity-item").forEach((item) => {
+          item.classList.remove("drag-target");
+        });
+      }
+
+      // 函數：附加拖曳事件監聽器到所有活動項目
+      function attachDragListeners() {
+        const items = document.querySelectorAll(".activity-item");
+        items.forEach((item) => {
+          // 移除舊的監聽器以避免重複，雖然這裡因為每次都重新渲染，這步驟不是嚴格必要的
+          item.removeEventListener("dragstart", handleDragStart);
+          item.removeEventListener("dragover", handleDragOver);
+          item.removeEventListener("dragleave", handleDragLeave);
+          item.removeEventListener("drop", handleDrop);
+          item.removeEventListener("dragend", handleDragEnd);
+
+          // 附加新的監聽器
+          item.addEventListener("dragstart", handleDragStart);
+          item.addEventListener("dragover", handleDragOver);
+          item.addEventListener("dragleave", handleDragLeave);
+          item.addEventListener("drop", handleDrop);
+          item.addEventListener("dragend", handleDragEnd);
+        });
+      }
+
+      // --- Core Navigation and State Management ---
+
+      function navigate(page) {
+        appState.currentPage = page;
+        // Update active state in sidebar
+        document
+          .querySelectorAll(".nav-item")
+          .forEach((el) => el.classList.remove("active"));
+        const activeNav = document.getElementById(`nav-${page}`);
+        if (activeNav) activeNav.classList.add("active");
+        renderApp();
+        window.scrollTo(0, 0);
+      }
+
+      // --- Utility Functions for Itinerary Detail Modal & Activity Editing ---
+
+      // 函數：生成活動編輯器的 HTML
+      const getEditorHtml = (itineraryId, dayIndex) => {
+        return `
+                <div id="activity-editor" class="bg-indigo-50 p-4 rounded-xl shadow-inner border border-indigo-200 mb-4">
+                    <h5 class="font-bold text-indigo-600 mb-3">新增當日活動</h5>
+                    <form id="add-activity-form" onsubmit="event.preventDefault(); addActivity('${itineraryId}', ${dayIndex});">
+                        <div class="grid grid-cols-2 gap-3 mb-3">
+                            <!-- Time Input -->
+                            <div class="col-span-1">
+                                <label for="activity-time" class="block text-xs font-medium text-gray-700">時間 (e.g., 09:30)</label>
+                                <input type="text" id="activity-time" required class="mt-1 w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 text-sm" placeholder="10:00">
+                            </div>
+                            <!-- Icon Input (Simplified) -->
+                            <div class="col-span-1">
+                                <label for="activity-icon" class="block text-xs font-medium text-gray-700">圖示 (e.g., coffee, map-pin)</label>
+                                <!-- Default value set to map-pin (Lucide icon names) -->
+                                <input type="text" id="activity-icon" required class="mt-1 w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 text-sm" value="map-pin">
+                            </div>
+                        </div>
+                        <!-- Name Input -->
+                        <div class="mb-3">
+                            <label for="activity-name" class="block text-xs font-medium text-gray-700">活動名稱</label>
+                            <input type="text" id="activity-name" required class="mt-1 w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 text-sm" placeholder="故宮博物院">
+                        </div>
+                        <!-- Description Input -->
+                        <div class="mb-4">
+                            <label for="activity-description" class="block text-xs font-medium text-gray-700">活動描述 (選填)</label>
+                            <textarea id="activity-description" class="mt-1 w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 text-sm" placeholder="參觀清宮文物，預計停留 2 小時"></textarea>
+                        </div>
+                        
+                        <!-- Action Buttons -->
+                        <div class="flex justify-end space-x-3">
+                            <button type="button" onclick="toggleActivityEditor('${itineraryId}', ${dayIndex}, true)" class="px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400 transition text-sm font-semibold">取消</button>
+                            <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition text-sm font-semibold">儲存活動</button>
+                        </div>
+                    </form>
+                </div>
+            `;
+      };
+
+      // 函數：切換活動編輯器 (顯示/隱藏)
+      function toggleActivityEditor(itineraryId, dayIndex, hideOnly = false) {
+        const editorContainer = document.getElementById(
+          "activity-editor-container"
+        );
+        const addButton = document.getElementById("add-activity-btn");
+
+        if (!editorContainer || !addButton) return;
+
+        // Check if editor is currently empty (hidden state)
+        const isEditorHidden = editorContainer.children.length === 0;
+
+        if (isEditorHidden && !hideOnly) {
+          // Show editor
+          editorContainer.innerHTML = getEditorHtml(itineraryId, dayIndex);
+          editorContainer.style.maxHeight = editorContainer.scrollHeight + "px"; // Expand height
+          editorContainer.style.padding = "1rem 0"; // Restore vertical padding
+          addButton.style.display = "none";
+          // Remove potential previous error messages
+          document.getElementById("validation-error")?.remove();
+          // Focus on the first input field
+          document.getElementById("activity-time").focus();
+          lucide.createIcons(); // Ensure icons in the editor form are rendered
+        } else {
+          // Hide editor
+          editorContainer.style.maxHeight = "0";
+          editorContainer.style.padding = "0";
+          // Wait for transition to finish before clearing content
+          setTimeout(() => {
+            editorContainer.innerHTML = "";
+            addButton.style.display = "flex";
+          }, 300); // Match CSS transition duration
+        }
+      }
+
+      // 函數：處理表單提交並新增活動到數據中
+      function addActivity(itineraryId, dayIndex) {
+        const time = document.getElementById("activity-time").value.trim();
+        const icon =
+          document.getElementById("activity-icon").value.trim() || "map-pin";
+        const name = document.getElementById("activity-name").value.trim();
+        const description = document
+          .getElementById("activity-description")
+          .value.trim();
+
+        // 簡單的驗證
+        if (!time || !name) {
+          let errorEl = document.getElementById("validation-error");
+          if (!errorEl) {
+            document
+              .querySelector("#add-activity-form")
+              .insertAdjacentHTML(
+                "beforebegin",
+                '<div id="validation-error" class="text-red-600 bg-red-100 p-2 rounded-md mb-2 text-sm">請填寫時間和活動名稱。</div>'
+              );
+            errorEl = document.getElementById("validation-error");
+          }
+          setTimeout(() => errorEl?.remove(), 3000);
+          return;
+        }
+
+        const itinerary = appState.mockItineraries.find(
+          (i) => i.id === itineraryId
+        );
+        if (!itinerary || !itinerary.days || !itinerary.days[dayIndex]) {
+          console.error("找不到行程或日期。");
+          return;
+        }
+
+        const newActivity = { time, icon, name, description };
+
+        // 將新活動推到列表末端 (讓用戶自己拖曳排序)
+        itinerary.days[dayIndex].activities.push(newActivity);
+        // *** 移除自動排序，因為現在使用拖曳功能 ***
+        // itinerary.days[dayIndex].activities.sort((a, b) => a.time.localeCompare(b.time));
+
+        // 1. 隱藏編輯器
+        toggleActivityEditor(itineraryId, dayIndex, true);
+
+        // 2. 重新渲染時間軸
+        switchItineraryDay(itineraryId, dayIndex);
+
+        console.log("成功新增活動:", newActivity);
+      }
+
+      // 函數：根據日期數據生成活動時間軸的 HTML
+      const generateTimelineHtml = (day, itineraryId, dayIndex) => {
+        if (!day || !day.activities || day.activities.length === 0) {
+          return `
+                    <div class="p-4 text-center text-gray-400">這一天沒有安排活動。</div>
+                    <!-- Activity Editor Insertion Point (Even if empty, for toggle function) -->
+                    <div id="activity-editor-container" class="mt-4 transition-all duration-300 overflow-hidden" style="max-height: 0; padding: 0;"></div>
+                    <button id="add-activity-btn" onclick="toggleActivityEditor('${itineraryId}', ${dayIndex})" class="mt-4 text-indigo-600 font-bold hover:text-indigo-800 transition flex items-center">
+                        <i data-lucide="plus" class="w-5 h-5 mr-1"></i>
+                        <span>新增活動</span>
+                    </button>
+                `;
+        }
+
+        // Render activities
+        // *** 加上 draggable="true", data-activity-index 和 cursor-move ***
+        const activitiesHtml = day.activities
+          .map(
+            (activity, index) => `
+                <div class="activity-item relative pl-8 pb-8 cursor-move" 
+                     draggable="true" 
+                     data-itinerary-id="${itineraryId}" 
+                     data-day-index="${dayIndex}" 
+                     data-activity-index="${index}">
+                    <!-- Timeline Marker (Dot) -->
+                    <div class="absolute left-0 top-0 w-4 h-4 rounded-full bg-indigo-500 border-4 border-white z-10"></div>
+                    <!-- Timeline Line -->
+                    <div class="absolute left-[7px] top-0 bottom-0 w-0.5 bg-indigo-200"></div>
+
+                    <div class="activity-content ml-4 p-2 -my-2 rounded-md transition duration-200">
+                        <div class="flex items-center space-x-2 text-sm text-gray-500 mb-1">
+                            <!-- 圖示 (Icon) - Use activity.icon -->
+                            <i data-lucide="${activity.icon || "map-pin"}" class="w-4 h-4 text-indigo-500"></i>
+                            <span class="font-bold text-indigo-600">${activity.time}</span>
+                        </div>
+                        <h4 class="font-bold text-lg text-gray-800">${activity.name}</h4>
+                        <p class="text-sm text-gray-600">${activity.description}</p>
+                    </div>
+                </div>
+            `
+          )
+          .join("");
+
+        return `
+                <div class="relative ml-4">
+                    ${activitiesHtml}
+                    <!-- End Marker -->
+                    <div class="absolute left-0 bottom-0 w-4 h-4 rounded-full bg-gray-300 border-4 border-white z-10"></div>
+                </div>
+                
+                <!-- Activity Editor Insertion Point -->
+                <div id="activity-editor-container" class="mt-4 transition-all duration-300 overflow-hidden" style="max-height: 0; padding: 0;"></div>
+
+                <!-- Button now calls the editor toggle function -->
+                <button id="add-activity-btn" onclick="toggleActivityEditor('${itineraryId}', ${dayIndex})" class="mt-4 text-indigo-600 font-bold hover:text-indigo-800 transition flex items-center">
+                    <i data-lucide="plus" class="w-5 h-5 mr-1"></i>
+                    <span>新增活動</span>
+                </button>
+            `;
+      };
+
+      // 函數：切換行程詳情模態框內顯示的日期內容 (現在需要 itineraryId)
+      function switchItineraryDay(itineraryId, dayIndex) {
+        const itinerary = appState.mockItineraries.find(
+          (i) => i.id === itineraryId
+        );
+        if (!itinerary || !itinerary.days || !itinerary.days[dayIndex]) return;
+
+        const day = itinerary.days[dayIndex];
+        const container = document.getElementById(
+          "itinerary-timeline-container"
+        );
+        const tabContainer = document.getElementById("day-tabs-container");
+
+        if (container) {
+          // 1. 渲染新一天的時間軸內容，並傳遞 itineraryId 和 dayIndex
+          container.innerHTML = generateTimelineHtml(
+            day,
+            itineraryId,
+            dayIndex
+          );
+
+          // 2. 更新活躍標籤的樣式
+          if (tabContainer) {
+            tabContainer.querySelectorAll("span").forEach((tab, index) => {
+              if (index === dayIndex) {
+                tab.className =
+                  "flex-shrink-0 px-3 py-1 bg-indigo-600 text-white text-sm font-bold rounded-full cursor-pointer shadow-md transition";
+              } else {
+                tab.className =
+                  "flex-shrink-0 px-3 py-1 bg-gray-100 text-gray-600 text-sm font-semibold rounded-full cursor-pointer hover:bg-gray-200 transition";
+              }
+            });
+          }
+
+          // 3. 重新建立 Lucide 圖示，確保新渲染的內容圖示正確顯示
+          lucide.createIcons();
+
+          // 4. 附加拖曳事件監聽器到新的活動項目
+          attachDragListeners();
+        }
+      }
+
+      // --- Modal Logic & Content Generation ---
+
+      const getModalContent = (type, itemId = null) => {
+        if (type === "posting_choice") {
+          return `
+                    <div class="bg-white rounded-2xl p-6 w-full max-w-sm">
+                        <h3 class="text-xl font-bold text-gray-800 mb-6">你想發布什麼？</h3>
+                        <div class="space-y-4">
+                            <button onclick="openModal('post_editor', 'discussion')" class="w-full flex items-center p-4 bg-orange-50 hover:bg-orange-100 rounded-xl transition border border-orange-200">
+                                <i data-lucide="message-square" class="w-6 h-6 text-orange-500 mr-4"></i>
+                                <div>
+                                    <p class="font-bold text-gray-800">發起討論話題</p>
+                                    <p class="text-xs text-gray-500">分享經驗或尋求建議</p>
+                                </div>
+                            </button>
+                            <button onclick="openModal('post_editor', 'find_traveler')" class="w-full flex items-center p-4 bg-green-50 hover:bg-green-100 rounded-xl transition border border-green-200">
+                                <i data-lucide="users" class="w-6 h-6 text-green-500 mr-4"></i>
+                                <div>
+                                    <p class="font-bold text-gray-800">尋找旅伴</p>
+                                    <p class="text-xs text-gray-500">找到志同道合的夥伴</p>
+                                </div>
+                            </button>
+                        </div>
+                        <button onclick="closeModal()" class="mt-6 w-full text-sm text-gray-500 hover:text-gray-800">取消</button>
+                    </div>
+                `;
+        }
+
+        if (type === "post_editor" && itemId) {
+          const postType = itemId; // 'discussion' or 'find_traveler'
+          const postTypeName =
+            postType === "discussion" ? "討論話題" : "尋找旅伴";
+          const buttonColorClass =
+            postType === "discussion"
+              ? "bg-orange-500 hover:bg-orange-600"
+              : "bg-green-500 hover:bg-green-600";
+
+          return `
+                    <div class="bg-white rounded-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto custom-scrollbar">
+                        <!-- Header -->
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-2xl font-bold text-gray-800">發起${postTypeName}</h3>
+                            <button onclick="closeModal()" class="p-2 bg-gray-100 rounded-full text-gray-600 hover:bg-gray-200 transition">
+                                <i data-lucide="x" class="w-5 h-5"></i>
+                            </button>
+                        </div>
+
+                        <!-- Title Input -->
+                        <div class="mb-4">
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">標題</label>
+                            <input 
+                                type="text" 
+                                id="post-title-input" 
+                                placeholder="輸入標題..." 
+                                class="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:outline-none"
+                            >
+                        </div>
+
+                        <!-- Content Input -->
+                        <div class="mb-4">
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">內文</label>
+                            <textarea 
+                                id="post-content-input" 
+                                placeholder="寫下你的內容..." 
+                                class="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:outline-none resize-none" 
+                                rows="8"
+                            ></textarea>
+                            <div class="flex items-center justify-between mt-3">
+                                <div class="flex items-center space-x-2 relative">
+                                    <input type="file" id="post-image-upload" accept="image/*,video/*" class="hidden" onchange="insertImageToPostEditor(this)">
+                                    <button onclick="document.getElementById('post-image-upload').click()" class="p-2 hover:bg-gray-100 rounded-full transition" title="插入圖片、影像">
+                                        <i data-lucide="image" class="w-5 h-5 text-gray-400"></i>
+                                    </button>
+                                    <input type="file" id="post-gif-upload" accept="image/gif" class="hidden" onchange="insertGifToPostEditor(this)">
+                                    <button onclick="document.getElementById('post-gif-upload').click()" class="p-2 hover:bg-gray-100 rounded-full transition" title="插入 GIF 檔案">
+                                        <i data-lucide="file-image" class="w-5 h-5 text-gray-400"></i>
+                                    </button>
+                                    <button onclick="showPostEditorEmojiPicker(event)" class="p-2 hover:bg-gray-100 rounded-full transition" title="插入表情符號">
+                                        <i data-lucide="smile" class="w-5 h-5 text-gray-400"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="flex items-center justify-end space-x-3 pt-4 border-t border-gray-200">
+                            <button onclick="closeModal()" class="px-6 py-2 text-gray-600 hover:text-gray-800 transition font-semibold">
+                                取消
+                            </button>
+                            <button onclick="submitPost('${postType}')" class="px-6 py-2 ${buttonColorClass} text-white rounded-full font-semibold transition">
+                                發布
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Emoji Picker Modal for Post Editor -->
+                    <div id="emoji-picker-modal-post-editor" class="hidden fixed inset-0 z-[9999] flex items-center justify-center bg-black/20" onclick="closePostEditorEmojiPicker(event)">
+                        <div class="bg-white rounded-2xl shadow-2xl p-4 max-w-sm w-full mx-4" onclick="event.stopPropagation()">
+                            <div class="flex items-center justify-between mb-3">
+                                <h3 class="text-lg font-semibold text-gray-800">選擇表情符號</h3>
+                                <button onclick="closePostEditorEmojiPicker()" class="p-1 hover:bg-gray-100 rounded-full transition">
+                                    <i data-lucide="x" class="w-5 h-5 text-gray-500"></i>
+                                </button>
+                            </div>
+                            <div class="max-h-64 overflow-y-auto">
+                                <div class="grid grid-cols-8 gap-2">
+                                    ${[
+                                      "😀",
+                                      "😃",
+                                      "😄",
+                                      "😁",
+                                      "😆",
+                                      "😅",
+                                      "🤣",
+                                      "😂",
+                                      "🙂",
+                                      "🙃",
+                                      "😉",
+                                      "😊",
+                                      "😇",
+                                      "🥰",
+                                      "😍",
+                                      "🤩",
+                                      "😘",
+                                      "😗",
+                                      "😚",
+                                      "😙",
+                                      "😋",
+                                      "😛",
+                                      "😜",
+                                      "🤪",
+                                      "😝",
+                                      "🤑",
+                                      "🤗",
+                                      "🤭",
+                                      "🤫",
+                                      "🤔",
+                                      "🤐",
+                                      "🤨",
+                                      "😐",
+                                      "😑",
+                                      "😶",
+                                      "😏",
+                                      "😒",
+                                      "🙄",
+                                      "😬",
+                                      "🤥",
+                                      "😌",
+                                      "😔",
+                                      "😪",
+                                      "🤤",
+                                      "😴",
+                                      "😷",
+                                      "🤒",
+                                      "🤕",
+                                      "🤢",
+                                      "🤮",
+                                      "🤧",
+                                      "🥵",
+                                      "🥶",
+                                      "😶‍🌫️",
+                                      "😵",
+                                      "😵‍💫",
+                                      "🤯",
+                                      "🤠",
+                                      "🥳",
+                                      "🥸",
+                                      "😎",
+                                      "🤓",
+                                      "🧐",
+                                      "😕",
+                                      "😟",
+                                      "🙁",
+                                      "☹️",
+                                      "😮",
+                                      "😯",
+                                      "😲",
+                                      "😳",
+                                      "🥺",
+                                      "😦",
+                                      "😧",
+                                      "😨",
+                                      "😰",
+                                      "😥",
+                                      "😢",
+                                      "😭",
+                                      "😱",
+                                      "😖",
+                                      "😣",
+                                      "😞",
+                                      "😓",
+                                      "😩",
+                                      "😫",
+                                      "🥱",
+                                      "😤",
+                                      "😡",
+                                      "😠",
+                                      "🤬",
+                                      "😈",
+                                      "👿",
+                                      "💀",
+                                      "☠️",
+                                      "💩",
+                                      "🤡",
+                                      "👹",
+                                      "👺",
+                                      "👻",
+                                      "👽",
+                                      "👾",
+                                      "🤖",
+                                      "😺",
+                                      "😸",
+                                      "😹",
+                                      "😻",
+                                      "😼",
+                                      "😽",
+                                      "🙀",
+                                      "😿",
+                                      "😾",
+                                    ]
+                                      .map(
+                                        (emoji) => `
+                                      <button onclick="insertEmojiToPostEditor('${emoji}')" class="text-2xl hover:bg-gray-100 rounded-lg p-2 transition">${emoji}</button>
+                                    `
+                                      )
+                                      .join("")}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+        }
+
+        if (type === "filter_placeholder") {
+          return `
+                    <div id="filter-modal-content" class="bg-white rounded-2xl p-6 w-full max-w-sm text-center">
+                        <i data-lucide="sliders" class="w-10 h-10 text-indigo-500 mx-auto mb-4"></i>
+                        <h3 class="text-xl font-bold text-gray-800 mb-2">篩選功能提示</h3>
+                        <p class="text-sm text-gray-600 mb-4">內容將會根據您選擇的篩選條件更新 (目前為 UI 佔位)</p>
+                        <button onclick="closeModal()" class="bg-indigo-600 text-white px-4 py-2 rounded-xl hover:bg-indigo-700 transition">知道了</button>
+                    </div>
+                `;
+        }
+
+        if (type === "itinerary_detail" && itemId) {
+          const itinerary = appState.mockItineraries.find(
+            (i) => i.id === itemId
+          );
+          if (!itinerary) return `<div>找不到行程</div>`;
+
+          // 根據所有天數數據，動態生成日期切換標籤
+          const dayTabsHtml = (itinerary.days || [])
+            .map(
+              (day, index) => `
+                    <span onclick="switchItineraryDay('${itinerary.id}', ${index})" 
+                          class="flex-shrink-0 px-3 py-1 ${index === 0 ? "bg-indigo-600 text-white font-bold shadow-md" : "bg-gray-100 text-gray-600 font-semibold hover:bg-gray-200"} text-sm rounded-full cursor-pointer transition">
+                        ${day.date}
+                    </span>
+                `
+            )
+            .join("");
+
+          // Render packing list
+          const packingList = itinerary.packingList || [];
+          // *** FIX: 確保 category.items 存在且為陣列 ***
+          const packingListHtml = packingList
+            .map((category) => {
+              const items = category.items || [];
+              return `
+                        <h5 class="font-bold text-gray-700 mt-4 mb-2">${category.category}</h5>
+                        ${items
+                          .map(
+                            (item) => `
+                            <label class="flex items-center text-sm space-x-2 py-1 cursor-pointer hover:bg-gray-50 rounded-md px-2">
+                                <input type="checkbox" ${item.checked ? "checked" : ""} class="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500 border-gray-300">
+                                <span class="${item.checked ? "line-through text-gray-400" : "text-gray-800"}">${item.name}</span>
+                            </label>
+                        `
+                          )
+                          .join("")}
+                    `;
+            })
+            .join("");
+
+          return `
+                    <div class="bg-white rounded-3xl p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto custom-scrollbar relative shadow-2xl">
+                        <!-- Close Button -->
+                        <button onclick="closeModal()" class="absolute top-4 right-4 p-2 bg-gray-100 rounded-full text-gray-600 hover:bg-gray-200 transition z-50">
+                            <i data-lucide="x" class="w-6 h-6"></i>
+                        </button>
+                        
+                        <!-- Header -->
+                        <h2 class="text-3xl font-extrabold text-indigo-600 mb-6 flex items-center">
+                            <i data-lucide="map" class="w-8 h-8 mr-3"></i> ${itinerary.title}
+                        </h2>
+
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                            <!-- Left: Timeline (2/3 width) -->
+                            <div class="lg:col-span-2 bg-gray-50 p-5 rounded-2xl border border-gray-100">
+                                <div class="flex items-center justify-between mb-4 border-b pb-3">
+                                    <div class="flex items-center space-x-2 text-gray-600">
+                                        <i data-lucide="calendar" class="w-5 h-5 text-green-500"></i>
+                                        <span class="font-semibold">${itinerary.startDate} - ${itinerary.endDate}</span>
+                                    </div>
+                                    <button class="text-red-500 hover:text-red-700 transition" onclick="openModal('future_feature', '刪除行程')">
+                                        <i data-lucide="trash-2" class="w-5 h-5"></i>
+                                    </button>
+                                </div>
+                                
+                                <!-- Day Selection Tabs (Dynamic) -->
+                                <div id="day-tabs-container" class="flex space-x-2 mb-6 overflow-x-auto pb-2 custom-scrollbar">
+                                    ${dayTabsHtml}
+                                </div>
+
+                                <!-- Activities Timeline Placeholder (Content loaded by switchItineraryDay) -->
+                                <div id="itinerary-timeline-container" class="relative">
+                                    <div class="p-4 text-center text-gray-400">載入中...</div>
+                                </div>
+                            </div>
+
+                            <!-- Right: Packing List (1/3 width) -->
+                            <div class="lg:col-span-1 bg-white p-5 rounded-2xl border-4 border-gray-800 shadow-[4px_4px_0px_0px_rgba(31,41,55,1)]">
+                                <div class="flex justify-between items-center mb-4 border-b pb-3">
+                                    <h3 class="font-extrabold text-xl text-gray-800 flex items-center">
+                                        <i data-lucide="list-checks" class="w-5 h-5 mr-2 text-green-600"></i>
+                                        所需物品
+                                    </h3>
+                                    <button class="text-green-600 hover:text-green-800"><i data-lucide="plus" class="w-5 h-5"></i></button>
+                                </div>
+                                <div class="text-sm">
+                                    ${packingListHtml}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+        }
+
+        if (type === "itinerary_edit") {
+          const isNew = !itemId;
+          const itinerary = isNew
+            ? {
+                id: null,
+                title: "",
+                startDate: "",
+                endDate: "",
+                status: "planning",
+                days: [
+                  {
+                    date: "Day 1",
+                    activities: [],
+                  },
+                ],
+                packingList: [
+                  {
+                    category: "證件",
+                    items: [],
+                  },
+                ],
+              }
+            : appState.mockItineraries.find((i) => i.id === itemId);
+
+          if (!itinerary) return `<div>找不到行程</div>`;
+
+          // Get current edit day index
+          const currentDayIndex = appState.currentEditDayIndex || 0;
+
+          // Generate day tabs
+          const dayTabsHtml = (itinerary.days || [])
+            .map(
+              (day, index) => `
+              <div class="flex items-center space-x-1">
+                <input type="text" value="${day.date || `Day ${index + 1}`}" 
+                       onclick="event.stopPropagation(); switchEditItineraryDay(${index})" 
+                       onchange="updateDayDate(${index}, this.value)"
+                       class="flex-shrink-0 px-3 py-1 ${index === currentDayIndex ? "bg-indigo-600 text-white font-bold shadow-md" : "bg-gray-100 text-gray-600 font-semibold hover:bg-gray-200"} text-sm rounded-full cursor-pointer transition border-none focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                       style="width: auto; min-width: 80px;">
+              </div>
+            `
+            )
+            .join("");
+
+          // Generate activities for current day
+          const currentDay =
+            itinerary.days && itinerary.days[currentDayIndex]
+              ? itinerary.days[currentDayIndex]
+              : { activities: [] };
+          const activitiesHtml = currentDay.activities
+            ? currentDay.activities
+                .map(
+                  (activity, index) => `
+                <div class="activity-item-edit relative pl-8 pb-4 mb-4 border-b border-gray-200">
+                  <div class="flex items-start space-x-3">
+                    <div class="flex-1">
+                      <div class="flex items-center space-x-2 mb-2">
+                        <input type="text" value="${activity.time || ""}" placeholder="時間 (e.g., 09:00)" 
+                               class="w-24 px-2 py-1 border border-gray-300 rounded text-sm" 
+                               onchange="updateActivity(${index}, 'time', this.value)">
+                        <input type="text" value="${activity.icon || "map-pin"}" placeholder="圖示" 
+                               class="w-24 px-2 py-1 border border-gray-300 rounded text-sm" 
+                               onchange="updateActivity(${index}, 'icon', this.value)">
+                      </div>
+                      <input type="text" value="${activity.name || ""}" placeholder="活動名稱" 
+                             class="w-full px-3 py-2 border border-gray-300 rounded-lg mb-2 font-semibold" 
+                             onchange="updateActivity(${index}, 'name', this.value)">
+                      <textarea placeholder="活動描述" 
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" 
+                                rows="2" 
+                                onchange="updateActivity(${index}, 'description', this.value)">${activity.description || ""}</textarea>
+                    </div>
+                    <button onclick="removeActivity(${index})" class="p-2 text-red-500 hover:bg-red-50 rounded-full">
+                      <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    </button>
+                  </div>
+                </div>
+              `
+                )
+                .join("")
+            : "";
+
+          // Generate packing list
+          const packingListHtml = (itinerary.packingList || [])
+            .map(
+              (category, catIndex) => `
+                <div class="mb-4">
+                  <div class="flex items-center justify-between mb-2">
+                    <input type="text" value="${category.category || ""}" placeholder="分類名稱" 
+                           class="font-bold text-gray-700 border-b-2 border-transparent focus:border-indigo-500 focus:outline-none px-1" 
+                           onchange="updatePackingCategory(${catIndex}, this.value)">
+                    <button onclick="removePackingCategory(${catIndex})" class="text-red-500 hover:text-red-700 text-sm">
+                      <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                  </div>
+                  <div id="packing-items-${catIndex}" class="space-y-1">
+                    ${(category.items || [])
+                      .map(
+                        (item, itemIndex) => `
+                      <div class="flex items-center space-x-2">
+                        <input type="checkbox" ${item.checked ? "checked" : ""} 
+                               onchange="updatePackingItem(${catIndex}, ${itemIndex}, 'checked', this.checked)"
+                               class="w-4 h-4 text-indigo-600 rounded">
+                        <input type="text" value="${item.name || ""}" placeholder="物品名稱" 
+                               class="flex-1 px-2 py-1 border border-gray-300 rounded text-sm" 
+                               onchange="updatePackingItem(${catIndex}, ${itemIndex}, 'name', this.value)">
+                        <button onclick="removePackingItem(${catIndex}, ${itemIndex})" class="text-red-500 hover:text-red-700">
+                          <i data-lucide="x" class="w-3 h-3"></i>
+                        </button>
+                      </div>
+                    `
+                      )
+                      .join("")}
+                    <button onclick="addPackingItem(${catIndex})" class="text-sm text-indigo-600 hover:text-indigo-800 mt-2">
+                      <i data-lucide="plus" class="w-3 h-3 inline mr-1"></i> 新增物品
+                    </button>
+                  </div>
+                </div>
+              `
+            )
+            .join("");
+
+          return `
+            <div class="bg-white rounded-3xl p-6 w-full max-w-5xl max-h-[90vh] overflow-y-auto custom-scrollbar relative shadow-2xl">
+              <!-- Close Button -->
+              <button onclick="closeModal()" class="absolute top-4 right-4 p-2 bg-gray-100 rounded-full text-gray-600 hover:bg-gray-200 transition z-50">
+                <i data-lucide="x" class="w-6 h-6"></i>
+              </button>
+              
+              <!-- Header -->
+              <div class="mb-6">
+                <h2 class="text-3xl font-extrabold text-indigo-600 mb-4 flex items-center">
+                  <i data-lucide="map" class="w-8 h-8 mr-3"></i>
+                  <input type="text" id="edit-itinerary-title" value="${itinerary.title || ""}" placeholder="行程標題" 
+                         class="flex-1 text-3xl font-extrabold text-indigo-600 border-b-2 border-indigo-200 focus:border-indigo-500 focus:outline-none">
+                </h2>
+                
+                <!-- Date Inputs -->
+                <div class="flex items-center space-x-4 mb-4">
+                  <div class="flex items-center space-x-2">
+                    <i data-lucide="calendar" class="w-5 h-5 text-green-500"></i>
+                    <input type="text" id="edit-itinerary-start" value="${itinerary.startDate || ""}" placeholder="開始日期 (e.g., 2024.12.20)" 
+                           class="px-3 py-2 border border-gray-300 rounded-lg">
+                    <span class="text-gray-400">-</span>
+                    <input type="text" id="edit-itinerary-end" value="${itinerary.endDate || ""}" placeholder="結束日期 (e.g., 2024.12.24)" 
+                           class="px-3 py-2 border border-gray-300 rounded-lg">
+                  </div>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Left: Timeline (2/3 width) -->
+                <div class="lg:col-span-2 bg-gray-50 p-5 rounded-2xl border border-gray-100">
+                  <!-- Day Selection Tabs -->
+                  <div id="edit-day-tabs-container" class="flex space-x-2 mb-6 overflow-x-auto pb-2 custom-scrollbar">
+                    ${dayTabsHtml}
+                    <button onclick="addNewDay()" class="flex-shrink-0 px-3 py-1 bg-gray-200 text-gray-600 text-sm font-semibold rounded-full cursor-pointer hover:bg-gray-300 transition">
+                      <i data-lucide="plus" class="w-4 h-4 inline mr-1"></i> 新增天數
+                    </button>
+                  </div>
+
+                  <!-- Activities Timeline -->
+                  <div id="edit-itinerary-timeline-container" class="relative">
+                    ${activitiesHtml || '<div class="p-4 text-center text-gray-400">這一天沒有安排活動。</div>'}
+                    <button onclick="addNewActivity()" class="mt-4 text-indigo-600 font-bold hover:text-indigo-800 transition flex items-center">
+                      <i data-lucide="plus" class="w-5 h-5 mr-1"></i>
+                      <span>新增活動</span>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Right: Packing List (1/3 width) -->
+                <div class="lg:col-span-1 bg-white p-5 rounded-2xl border-4 border-gray-800 shadow-[4px_4px_0px_0px_rgba(31,41,55,1)]">
+                  <div class="flex justify-between items-center mb-4 border-b pb-3">
+                    <h3 class="font-extrabold text-xl text-gray-800 flex items-center">
+                      <i data-lucide="list-checks" class="w-5 h-5 mr-2 text-green-600"></i>
+                      所需物品
+                    </h3>
+                    <button onclick="addPackingCategory()" class="text-green-600 hover:text-green-800">
+                      <i data-lucide="plus" class="w-5 h-5"></i>
+                    </button>
+                  </div>
+                  <div class="text-sm" id="edit-packing-list-container">
+                    ${packingListHtml || '<p class="text-gray-400 text-sm">還沒有添加物品分類</p>'}
+                  </div>
+                </div>
+              </div>
+
+              <!-- Action Buttons -->
+              <div class="flex items-center justify-end space-x-4 mt-6 pt-6 border-t border-gray-200">
+                ${
+                  !isNew
+                    ? `
+                  <button onclick="deleteItinerary('${itemId}')" class="px-6 py-2 bg-red-500 text-white rounded-xl font-semibold hover:bg-red-600 transition">
+                    <i data-lucide="trash-2" class="w-4 h-4 inline mr-2"></i>
+                    刪除
+                  </button>
+                `
+                    : ""
+                }
+                <button onclick="saveItinerary('${itemId || "new"}')" class="px-6 py-2 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700 transition">
+                  <i data-lucide="save" class="w-4 h-4 inline mr-2"></i>
+                  儲存
+                </button>
+              </div>
+            </div>
+          `;
+        }
+
+        if (type === "post_detail" && itemId) {
+          const postId = parseInt(itemId);
+          const post = appState.mockPosts.find((p) => p.id === postId);
+          if (!post)
+            return `<div class="p-10 text-center text-gray-500">找不到文章</div>`;
+
+          const isFavorited = appState.favorites.includes(postId);
+          const isLiked = appState.likedPosts.includes(postId);
+          const comments = appState.mockComments[postId] || [];
+          const sortedComments = sortCommentsList(
+            comments,
+            appState.commentSort
+          );
+
+          const defaultAvatar =
+            "https://placehold.co/100x100/A0BFFF/ffffff?text=User";
+          const defaultPostImage =
+            "https://placehold.co/800x400/94A3B8/ffffff?text=Post+Image";
+
+          // Get translated post type name
+          let postTypeName;
+          if (post.type === "find_traveler") postTypeName = "找旅伴";
+          else if (post.type === "featured_itinerary")
+            postTypeName = "精選行程";
+          else postTypeName = "討論區";
+
+          return `
+            <div class="bg-white rounded-3xl p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto custom-scrollbar relative shadow-2xl">
+              <!-- Close Button -->
+              <button onclick="closeModal()" class="absolute top-4 right-4 p-2 bg-gray-100 rounded-full text-gray-600 hover:bg-gray-200 transition z-50">
+                <i data-lucide="x" class="w-6 h-6"></i>
+              </button>
+
+              <!-- Article Section -->
+              <div class="mb-6">
+                <!-- Title with Tags -->
+                <div class="mb-4">
+                  <div class="flex gap-2 mb-3">
+                    ${post.tags
+                      .map(
+                        (t) =>
+                          `<span class="text-xs bg-orange-100 text-orange-600 px-2 py-1 rounded-lg font-semibold">#${t}</span>`
+                      )
+                      .join("")}
+                  </div>
+                  <h1 class="text-3xl font-bold text-gray-900 mb-4">${post.title}</h1>
+                </div>
+
+                <!-- Author Info -->
+                <div class="flex items-center justify-between mb-4 pb-4 border-b border-gray-100">
+                  <div class="flex items-center space-x-3">
+                    <img src="${post.avatar}" onerror="this.onerror=null;this.src='${defaultAvatar}';" class="w-12 h-12 rounded-full object-cover">
+                    <div>
+                      <div class="flex items-center space-x-2">
+                        <span class="font-bold text-gray-800">${post.author}</span>
+                        ${post.spiritAnimal ? `<span class="text-xs font-semibold text-indigo-500 bg-indigo-50 px-2 py-0.5 rounded-full">${post.spiritAnimal}</span>` : ""}
+                        ${post.isAuthor ? `<span class="text-xs font-semibold text-orange-500 bg-orange-50 px-2 py-0.5 rounded-full">作者</span>` : ""}
+                      </div>
+                      <div class="text-xs text-gray-400">${post.time} • ${postTypeName}</div>
+                    </div>
+                  </div>
+                  <button class="px-4 py-2 bg-indigo-600 text-white rounded-full text-sm font-semibold hover:bg-indigo-700 transition">
+                    追蹤
+                  </button>
+                </div>
+
+                <!-- Article Content -->
+                <div class="mb-6">
+                  <p class="text-gray-800 leading-relaxed whitespace-pre-line">${post.content}</p>
+                </div>
+
+                <!-- Post Image -->
+                ${
+                  post.image
+                    ? `<div class="w-full rounded-xl overflow-hidden mb-6"><img src="${post.image}" onerror="this.onerror=null;this.src='${defaultPostImage}';" class="w-full h-auto object-cover"></div>`
+                    : ""
+                }
+
+                <!-- Action Bar -->
+                <div class="flex items-center justify-between pt-4 border-t border-gray-100">
+                  <div class="flex items-center space-x-6 text-gray-400">
+                    <button onclick="toggleLike(${postId})" class="flex items-center space-x-2 hover:text-red-500 transition ${isLiked ? "text-red-500" : ""}">
+                      <i data-lucide="heart" class="w-5 h-5 ${isLiked ? "fill-red-500" : ""}"></i>
+                      <span class="text-sm font-semibold">${post.hearts}</span>
+                    </button>
+                    <button class="flex items-center space-x-2 hover:text-indigo-600 transition">
+                      <i data-lucide="message-circle" class="w-5 h-5"></i>
+                      <span class="text-sm font-semibold">${post.comments}</span>
+                    </button>
+                  </div>
+                  <div class="flex items-center space-x-4">
+                    <button onclick="toggleFavorite(${postId})" class="p-2 ${isFavorited ? "bg-red-500 text-white" : "hover:bg-gray-100"} rounded-full transition">
+                      <i data-lucide="bookmark" class="w-5 h-5 ${isFavorited ? "fill-white" : "text-gray-400"}"></i>
+                    </button>
+                    <button class="p-2 hover:bg-gray-100 rounded-full transition">
+                      <i data-lucide="share-2" class="w-5 h-5 text-gray-400"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Comments Section -->
+              <div id="comments-section-${postId}" class="border-t border-gray-200 pt-6">
+                <h2 class="text-xl font-bold text-gray-800 mb-4">留言(${comments.length})</h2>
+                
+                <!-- Comment Input -->
+                <div class="mb-4">
+                  <textarea id="modal-comment-input-${postId}" placeholder="寫下你的留言..." class="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:outline-none resize-none" rows="3"></textarea>
+                  <div class="flex items-center justify-between mt-3">
+                    <div class="flex items-center space-x-2 relative">
+                      <input type="file" id="modal-image-upload-${postId}" accept="image/*,video/*" class="hidden" onchange="insertImageToModalComment(${postId}, this)">
+                      <button onclick="document.getElementById('modal-image-upload-${postId}').click()" class="p-2 hover:bg-gray-100 rounded-full transition" title="插入圖片、影像">
+                        <i data-lucide="image" class="w-5 h-5 text-gray-400"></i>
+                      </button>
+                      <input type="file" id="modal-gif-upload-${postId}" accept="image/gif" class="hidden" onchange="insertGifToModalComment(${postId}, this)">
+                      <button onclick="document.getElementById('modal-gif-upload-${postId}').click()" class="p-2 hover:bg-gray-100 rounded-full transition" title="插入 GIF 檔案">
+                        <i data-lucide="file-image" class="w-5 h-5 text-gray-400"></i>
+                      </button>
+                      <button onclick="showModalEmojiPicker(${postId}, event)" class="p-2 hover:bg-gray-100 rounded-full transition" title="插入表情符號">
+                        <i data-lucide="smile" class="w-5 h-5 text-gray-400"></i>
+                      </button>
+                    </div>
+                    <button onclick="submitModalComment(${postId})" class="px-6 py-2 bg-indigo-600 text-white rounded-full font-semibold hover:bg-indigo-700 transition">
+                      發表
+                    </button>
+                  </div>
+                </div>
+                
+                <!-- Emoji Picker Modal (separate from button) -->
+                <div id="emoji-picker-modal-${postId}" class="hidden fixed inset-0 z-[9999] flex items-center justify-center bg-black/20" onclick="closeEmojiPickerModal(${postId}, event)">
+                  <div class="bg-white rounded-2xl shadow-2xl p-4 max-w-sm w-full mx-4" onclick="event.stopPropagation()">
+                    <div class="flex items-center justify-between mb-3">
+                      <h3 class="text-lg font-semibold text-gray-800">選擇表情符號</h3>
+                      <button onclick="closeEmojiPickerModal(${postId})" class="p-1 hover:bg-gray-100 rounded-full transition">
+                        <i data-lucide="x" class="w-5 h-5 text-gray-500"></i>
+                      </button>
+                    </div>
+                    <div class="max-h-64 overflow-y-auto">
+                      <div class="grid grid-cols-8 gap-2">
+                        ${[
+                          "😀",
+                          "😃",
+                          "😄",
+                          "😁",
+                          "😆",
+                          "😅",
+                          "🤣",
+                          "😂",
+                          "🙂",
+                          "🙃",
+                          "😉",
+                          "😊",
+                          "😇",
+                          "🥰",
+                          "😍",
+                          "🤩",
+                          "😘",
+                          "😗",
+                          "😚",
+                          "😙",
+                          "😋",
+                          "😛",
+                          "😜",
+                          "🤪",
+                          "😝",
+                          "🤑",
+                          "🤗",
+                          "🤭",
+                          "🤫",
+                          "🤔",
+                          "🤐",
+                          "🤨",
+                          "😐",
+                          "😑",
+                          "😶",
+                          "😏",
+                          "😒",
+                          "🙄",
+                          "😬",
+                          "🤥",
+                          "😌",
+                          "😔",
+                          "😪",
+                          "🤤",
+                          "😴",
+                          "😷",
+                          "🤒",
+                          "🤕",
+                          "🤢",
+                          "🤮",
+                          "🤧",
+                          "🥵",
+                          "🥶",
+                          "😶‍🌫️",
+                          "😵",
+                          "😵‍💫",
+                          "🤯",
+                          "🤠",
+                          "🥳",
+                          "🥸",
+                          "😎",
+                          "🤓",
+                          "🧐",
+                          "😕",
+                          "😟",
+                          "🙁",
+                          "☹️",
+                          "😮",
+                          "😯",
+                          "😲",
+                          "😳",
+                          "🥺",
+                          "😦",
+                          "😧",
+                          "😨",
+                          "😰",
+                          "😥",
+                          "😢",
+                          "😭",
+                          "😱",
+                          "😖",
+                          "😣",
+                          "😞",
+                          "😓",
+                          "😩",
+                          "😫",
+                          "🥱",
+                          "😤",
+                          "😡",
+                          "😠",
+                          "🤬",
+                          "😈",
+                          "👿",
+                          "💀",
+                          "☠️",
+                          "💩",
+                          "🤡",
+                          "👹",
+                          "👺",
+                          "👻",
+                          "👽",
+                          "👾",
+                          "🤖",
+                          "😺",
+                          "😸",
+                          "😹",
+                          "😻",
+                          "😼",
+                          "😽",
+                          "🙀",
+                          "😿",
+                          "😾",
+                        ]
+                          .map(
+                            (emoji) => `
+                          <button onclick="insertEmojiToModalComment(${postId}, '${emoji}')" class="text-2xl hover:bg-gray-100 rounded-lg p-2 transition">${emoji}</button>
+                        `
+                          )
+                          .join("")}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Sort Buttons -->
+                <div class="flex items-center space-x-2 mb-4 pb-4 border-b border-gray-100">
+                  <button onclick="sortModalComments('hot', ${postId})" class="px-4 py-1.5 rounded-full text-sm font-semibold transition ${appState.commentSort === "hot" ? "bg-indigo-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}">
+                    熱門
+                  </button>
+                  <button onclick="sortModalComments('newest', ${postId})" class="px-4 py-1.5 rounded-full text-sm font-semibold transition ${appState.commentSort === "newest" ? "bg-indigo-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}">
+                    由新至舊
+                  </button>
+                  <button onclick="sortModalComments('oldest', ${postId})" class="px-4 py-1.5 rounded-full text-sm font-semibold transition ${appState.commentSort === "oldest" ? "bg-indigo-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}">
+                    由舊至新
+                  </button>
+                </div>
+
+                <!-- Comments List -->
+                <div id="modal-comments-list-${postId}" class="space-y-6">
+                  ${renderCommentsList(sortedComments, postId)}
+                </div>
+              </div>
+            </div>
+          `;
+        }
+
+        // Generic info modal for undeveloped features
+        return `
+                  <div class="bg-white rounded-2xl p-6 w-full max-w-sm text-center">
+                      <i data-lucide="construction" class="w-10 h-10 text-yellow-500 mx-auto mb-4"></i>
+                      <h3 class="text-xl font-bold text-gray-800 mb-2">功能開發中</h3>
+                      <p class="text-sm text-gray-600 mb-4">這個功能即將上線，敬請期待！</p>
+                      <button onclick="closeModal()" class="bg-indigo-600 text-white px-4 py-2 rounded-xl hover:bg-indigo-700 transition">知道了</button>
+                  </div>
+              `;
+      };
+
+      function openModal(type, itemId = null) {
+        const modal = document.getElementById("modal-container");
+        modal.innerHTML = getModalContent(type, itemId);
+
+        // Special handling for filter placeholder
+        if (type === "filter_placeholder" && itemId) {
+          document.querySelector("#filter-modal-content p").textContent =
+            `您選擇了 "${itemId}" 篩選。內容將會更新。 (目前為 UI 佔位)`;
+        }
+
+        modal.classList.remove("hidden");
+        // Re-create lucide icons for modal content
+        lucide.createIcons();
+
+        // --- NEW: Initial rendering for Itinerary Detail ---
+        if (type === "itinerary_detail" && itemId) {
+          // 確保在模態框結構已經被瀏覽器解析後，才呼叫動態內容渲染函數
+          setTimeout(() => {
+            switchItineraryDay(itemId, 0); // 載入第一天的內容 (Day 0)
+          }, 10);
+        }
+
+        // Initialize edit itinerary state
+        if (type === "itinerary_edit") {
+          if (itemId) {
+            const existing = appState.mockItineraries.find(
+              (i) => i.id === itemId
+            );
+            appState.editingItinerary = existing
+              ? JSON.parse(JSON.stringify(existing))
+              : {
+                  id: itemId,
+                  title: "",
+                  startDate: "",
+                  endDate: "",
+                  status: "planning",
+                  days: [{ date: "Day 1", activities: [] }],
+                  packingList: [{ category: "證件", items: [] }],
+                };
+          } else {
+            appState.editingItinerary = {
+              id: null,
+              title: "",
+              startDate: "",
+              endDate: "",
+              status: "planning",
+              days: [{ date: "Day 1", activities: [] }],
+              packingList: [{ category: "證件", items: [] }],
+            };
+          }
+          appState.currentEditDayIndex = 0;
+        }
+      }
+
+      function closeModal() {
+        document.getElementById("modal-container").classList.add("hidden");
+      }
+
+      // Close modal when clicking outside
+      document.getElementById("modal-container").onclick = (e) => {
+        if (e.target === document.getElementById("modal-container"))
+          closeModal();
+      };
+
+      // Modal comment functions
+      function submitModalComment(postId) {
+        const commentInput = document.getElementById(
+          `modal-comment-input-${postId}`
+        );
+        const content = commentInput?.value.trim();
+        if (!content) return;
+
+        // In a real app, this would send to backend
+        if (!appState.mockComments[postId]) {
+          appState.mockComments[postId] = [];
+        }
+
+        const newComment = {
+          id: `c${Date.now()}`,
+          author: appState.currentUser.name,
+          avatar: appState.currentUser.avatar,
+          time: "剛剛",
+          content: content,
+          likes: 0,
+          replies: [],
+        };
+
+        appState.mockComments[postId].push(newComment);
+        commentInput.value = "";
+        // Re-open modal to refresh comments
+        openModal("post_detail", postId);
+      }
+
+      function sortModalComments(sortType, postId) {
+        appState.commentSort = sortType;
+        // Re-open modal to refresh comments
+        openModal("post_detail", postId);
+      }
+
+      // Open post modal and scroll to comments section
+      function openPostModalWithComments(postId) {
+        openModal("post_detail", postId);
+        // Wait for modal to render, then scroll to comments
+        setTimeout(() => {
+          const modal = document.getElementById("modal-container");
+          const commentsSection = document.getElementById(
+            `comments-section-${postId}`
+          );
+          if (commentsSection && modal) {
+            // Scroll within the modal container
+            const modalScrollContainer =
+              modal.querySelector(".overflow-y-auto");
+            if (modalScrollContainer) {
+              const commentsOffset = commentsSection.offsetTop - 50; // Offset for better visibility
+              modalScrollContainer.scrollTo({
+                top: commentsOffset,
+                behavior: "smooth",
+              });
+            } else {
+              commentsSection.scrollIntoView({
+                behavior: "smooth",
+                block: "start",
+              });
+            }
+            // Focus on comment input
+            setTimeout(() => {
+              const commentInput = document.getElementById(
+                `modal-comment-input-${postId}`
+              );
+              if (commentInput) {
+                commentInput.focus();
+              }
+            }, 500);
+          }
+        }, 200);
+      }
+
+      // Insert image/video to modal comment
+      function insertImageToModalComment(postId, input) {
+        const file = input.files[0];
+        if (!file) return;
+
+        const commentInput = document.getElementById(
+          `modal-comment-input-${postId}`
+        );
+        if (!commentInput) return;
+
+        // Create a FileReader to read the file
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          const isVideo = file.type.startsWith("video/");
+          const insertText = isVideo
+            ? `\n[影片: ${file.name}]\n`
+            : `\n[圖片: ${file.name}]\n`;
+
+          const cursorPos = commentInput.selectionStart;
+          const textBefore = commentInput.value.substring(0, cursorPos);
+          const textAfter = commentInput.value.substring(cursorPos);
+          commentInput.value = textBefore + insertText + textAfter;
+          commentInput.focus();
+          commentInput.setSelectionRange(
+            cursorPos + insertText.length,
+            cursorPos + insertText.length
+          );
+        };
+        reader.readAsDataURL(file);
+      }
+
+      // Insert GIF to modal comment
+      function insertGifToModalComment(postId, input) {
+        const file = input.files[0];
+        if (!file) return;
+
+        const commentInput = document.getElementById(
+          `modal-comment-input-${postId}`
+        );
+        if (!commentInput) return;
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          const insertText = `\n[GIF: ${file.name}]\n`;
+          const cursorPos = commentInput.selectionStart;
+          const textBefore = commentInput.value.substring(0, cursorPos);
+          const textAfter = commentInput.value.substring(cursorPos);
+          commentInput.value = textBefore + insertText + textAfter;
+          commentInput.focus();
+          commentInput.setSelectionRange(
+            cursorPos + insertText.length,
+            cursorPos + insertText.length
+          );
+        };
+        reader.readAsDataURL(file);
+      }
+
+      // Show emoji picker modal for modal comment
+      function showModalEmojiPicker(postId, event) {
+        if (event) {
+          event.stopPropagation();
+        }
+        // Close all other emoji pickers first
+        document
+          .querySelectorAll('[id^="emoji-picker-modal-"]')
+          .forEach((picker) => {
+            picker.classList.add("hidden");
+          });
+        const picker = document.getElementById(`emoji-picker-modal-${postId}`);
+        if (picker) {
+          picker.classList.remove("hidden");
+          // Re-initialize lucide icons after showing
+          setTimeout(() => {
+            if (typeof lucide !== "undefined") {
+              lucide.createIcons();
+            }
+          }, 10);
+        }
+      }
+
+      // Close emoji picker modal
+      function closeEmojiPickerModal(postId, event) {
+        if (event) {
+          event.stopPropagation();
+        }
+        const picker = document.getElementById(`emoji-picker-modal-${postId}`);
+        if (picker) {
+          picker.classList.add("hidden");
+        }
+      }
+
+      // Insert emoji to modal comment
+      function insertEmojiToModalComment(postId, emoji) {
+        const commentInput = document.getElementById(
+          `modal-comment-input-${postId}`
+        );
+        if (!commentInput) return;
+
+        const cursorPos = commentInput.selectionStart;
+        const textBefore = commentInput.value.substring(0, cursorPos);
+        const textAfter = commentInput.value.substring(cursorPos);
+        commentInput.value = textBefore + emoji + textAfter;
+        commentInput.focus();
+        commentInput.setSelectionRange(
+          cursorPos + emoji.length,
+          cursorPos + emoji.length
+        );
+
+        // Close emoji picker modal
+        closeEmojiPickerModal(postId);
+      }
+
+      // --- Post Editor Functions ---
+
+      // Insert image/video to post editor
+      function insertImageToPostEditor(input) {
+        const file = input.files[0];
+        if (!file) return;
+
+        const contentInput = document.getElementById("post-content-input");
+        if (!contentInput) return;
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          const isVideo = file.type.startsWith("video/");
+          const insertText = isVideo
+            ? `\n[影片: ${file.name}]\n`
+            : `\n[圖片: ${file.name}]\n`;
+
+          const cursorPos = contentInput.selectionStart;
+          const textBefore = contentInput.value.substring(0, cursorPos);
+          const textAfter = contentInput.value.substring(cursorPos);
+          contentInput.value = textBefore + insertText + textAfter;
+          contentInput.focus();
+          contentInput.setSelectionRange(
+            cursorPos + insertText.length,
+            cursorPos + insertText.length
+          );
+        };
+        reader.readAsDataURL(file);
+      }
+
+      // Insert GIF to post editor
+      function insertGifToPostEditor(input) {
+        const file = input.files[0];
+        if (!file) return;
+
+        const contentInput = document.getElementById("post-content-input");
+        if (!contentInput) return;
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          const insertText = `\n[GIF: ${file.name}]\n`;
+
+          const cursorPos = contentInput.selectionStart;
+          const textBefore = contentInput.value.substring(0, cursorPos);
+          const textAfter = contentInput.value.substring(cursorPos);
+          contentInput.value = textBefore + insertText + textAfter;
+          contentInput.focus();
+          contentInput.setSelectionRange(
+            cursorPos + insertText.length,
+            cursorPos + insertText.length
+          );
+        };
+        reader.readAsDataURL(file);
+      }
+
+      // Show emoji picker for post editor
+      function showPostEditorEmojiPicker(event) {
+        if (event) {
+          event.stopPropagation();
+        }
+        const picker = document.getElementById(
+          "emoji-picker-modal-post-editor"
+        );
+        if (picker) {
+          picker.classList.remove("hidden");
+          setTimeout(() => {
+            if (typeof lucide !== "undefined") {
+              lucide.createIcons();
+            }
+          }, 10);
+        }
+      }
+
+      // Close emoji picker for post editor
+      function closePostEditorEmojiPicker(event) {
+        if (event) {
+          event.stopPropagation();
+        }
+        const picker = document.getElementById(
+          "emoji-picker-modal-post-editor"
+        );
+        if (picker) {
+          picker.classList.add("hidden");
+        }
+      }
+
+      // Insert emoji to post editor
+      function insertEmojiToPostEditor(emoji) {
+        const contentInput = document.getElementById("post-content-input");
+        if (!contentInput) return;
+
+        const cursorPos = contentInput.selectionStart;
+        const textBefore = contentInput.value.substring(0, cursorPos);
+        const textAfter = contentInput.value.substring(cursorPos);
+        contentInput.value = textBefore + emoji + textAfter;
+        contentInput.focus();
+        contentInput.setSelectionRange(
+          cursorPos + emoji.length,
+          cursorPos + emoji.length
+        );
+
+        // Close emoji picker modal
+        closePostEditorEmojiPicker();
+      }
+
+      // Submit post
+      function submitPost(postType) {
+        const titleInput = document.getElementById("post-title-input");
+        const contentInput = document.getElementById("post-content-input");
+
+        if (!titleInput || !contentInput) return;
+
+        const title = titleInput.value.trim();
+        const content = contentInput.value.trim();
+
+        if (!title) {
+          alert("請輸入標題");
+          return;
+        }
+
+        if (!content) {
+          alert("請輸入內容");
+          return;
+        }
+
+        // Create new post
+        const newPost = {
+          id: `p${Date.now()}`,
+          title: title,
+          content: content,
+          author: appState.currentUser.name,
+          avatar: appState.currentUser.avatar,
+          time: "剛剛",
+          hearts: 0,
+          comments: 0,
+          tags: postType === "discussion" ? ["討論"] : ["找旅伴"],
+          image: null,
+        };
+
+        // Add to mock posts
+        appState.mockPosts.unshift(newPost);
+
+        // Close modal
+        closeModal();
+
+        // Navigate to appropriate page
+        if (postType === "discussion") {
+          navigate("discussion");
+        } else {
+          navigate("find_traveler");
+        }
+
+        // Show success message
+        setTimeout(() => {
+          alert("發文成功！");
+        }, 100);
+      }
+
+      // --- Itinerary Edit Functions ---
+
+      function switchEditItineraryDay(dayIndex) {
+        appState.currentEditDayIndex = dayIndex;
+        // Re-open modal to refresh
+        const itineraryId = appState.editingItinerary?.id || null;
+        openModal("itinerary_edit", itineraryId);
+      }
+
+      function updateDayDate(dayIndex, value) {
+        if (!appState.editingItinerary || !appState.editingItinerary.days)
+          return;
+        const day = appState.editingItinerary.days[dayIndex];
+        if (!day) return;
+        day.date = value;
+      }
+
+      function updateActivity(activityIndex, field, value) {
+        if (!appState.editingItinerary || !appState.editingItinerary.days)
+          return;
+        const day =
+          appState.editingItinerary.days[appState.currentEditDayIndex];
+        if (!day || !day.activities || !day.activities[activityIndex]) return;
+        day.activities[activityIndex][field] = value;
+      }
+
+      function removeActivity(activityIndex) {
+        if (!appState.editingItinerary || !appState.editingItinerary.days)
+          return;
+        const day =
+          appState.editingItinerary.days[appState.currentEditDayIndex];
+        if (!day || !day.activities) return;
+        day.activities.splice(activityIndex, 1);
+        const itineraryId = appState.editingItinerary?.id || null;
+        openModal("itinerary_edit", itineraryId);
+      }
+
+      function addNewActivity() {
+        if (!appState.editingItinerary || !appState.editingItinerary.days)
+          return;
+        const day =
+          appState.editingItinerary.days[appState.currentEditDayIndex];
+        if (!day) return;
+        if (!day.activities) day.activities = [];
+        day.activities.push({
+          time: "",
+          icon: "map-pin",
+          name: "",
+          description: "",
+        });
+        const itineraryId = appState.editingItinerary?.id || null;
+        openModal("itinerary_edit", itineraryId);
+      }
+
+      function addNewDay() {
+        if (!appState.editingItinerary) return;
+        if (!appState.editingItinerary.days)
+          appState.editingItinerary.days = [];
+        const dayNumber = appState.editingItinerary.days.length + 1;
+        appState.editingItinerary.days.push({
+          date: `Day ${dayNumber}`,
+          activities: [],
+        });
+        appState.currentEditDayIndex =
+          appState.editingItinerary.days.length - 1;
+        const itineraryId = appState.editingItinerary?.id || null;
+        openModal("itinerary_edit", itineraryId);
+      }
+
+      function updatePackingItem(categoryIndex, itemIndex, field, value) {
+        if (
+          !appState.editingItinerary ||
+          !appState.editingItinerary.packingList
+        )
+          return;
+        const category = appState.editingItinerary.packingList[categoryIndex];
+        if (!category || !category.items || !category.items[itemIndex]) return;
+        category.items[itemIndex][field] = value;
+      }
+
+      function removePackingItem(categoryIndex, itemIndex) {
+        if (
+          !appState.editingItinerary ||
+          !appState.editingItinerary.packingList
+        )
+          return;
+        const category = appState.editingItinerary.packingList[categoryIndex];
+        if (!category || !category.items) return;
+        category.items.splice(itemIndex, 1);
+        const itineraryId = appState.editingItinerary?.id || null;
+        openModal("itinerary_edit", itineraryId);
+      }
+
+      function addPackingItem(categoryIndex) {
+        if (
+          !appState.editingItinerary ||
+          !appState.editingItinerary.packingList
+        )
+          return;
+        const category = appState.editingItinerary.packingList[categoryIndex];
+        if (!category) return;
+        if (!category.items) category.items = [];
+        category.items.push({ name: "", checked: false });
+        const itineraryId = appState.editingItinerary?.id || null;
+        openModal("itinerary_edit", itineraryId);
+      }
+
+      function addPackingCategory() {
+        if (!appState.editingItinerary) return;
+        if (!appState.editingItinerary.packingList)
+          appState.editingItinerary.packingList = [];
+        appState.editingItinerary.packingList.push({
+          category: "新分類",
+          items: [],
+        });
+        const itineraryId = appState.editingItinerary?.id || null;
+        openModal("itinerary_edit", itineraryId);
+      }
+
+      function removePackingCategory(categoryIndex) {
+        if (
+          !appState.editingItinerary ||
+          !appState.editingItinerary.packingList
+        )
+          return;
+        appState.editingItinerary.packingList.splice(categoryIndex, 1);
+        const itineraryId = appState.editingItinerary?.id || null;
+        openModal("itinerary_edit", itineraryId);
+      }
+
+      function updatePackingCategory(categoryIndex, value) {
+        if (
+          !appState.editingItinerary ||
+          !appState.editingItinerary.packingList
+        )
+          return;
+        const category = appState.editingItinerary.packingList[categoryIndex];
+        if (!category) return;
+        category.category = value;
+      }
+
+      function saveItinerary(itineraryId) {
+        if (!appState.editingItinerary) return;
+
+        // Get values from inputs
+        const title =
+          document.getElementById("edit-itinerary-title")?.value || "";
+        const startDate =
+          document.getElementById("edit-itinerary-start")?.value || "";
+        const endDate =
+          document.getElementById("edit-itinerary-end")?.value || "";
+
+        appState.editingItinerary.title = title;
+        appState.editingItinerary.startDate = startDate;
+        appState.editingItinerary.endDate = endDate;
+
+        if (itineraryId === "new" || !itineraryId) {
+          // Create new itinerary
+          const newId = "i" + (appState.mockItineraries.length + 1);
+          appState.editingItinerary.id = newId;
+          appState.mockItineraries.push(appState.editingItinerary);
+        } else {
+          // Update existing itinerary
+          const index = appState.mockItineraries.findIndex(
+            (i) => i.id === itineraryId
+          );
+          if (index > -1) {
+            appState.mockItineraries[index] = appState.editingItinerary;
+          }
+        }
+
+        closeModal();
+        // Refresh the page
+        if (appState.currentPage === "my_itinerary") {
+          renderApp();
+        }
+      }
+
+      function deleteItinerary(itineraryId) {
+        if (!confirm("確定要刪除這個行程嗎？")) return;
+
+        const index = appState.mockItineraries.findIndex(
+          (i) => i.id === itineraryId
+        );
+        if (index > -1) {
+          appState.mockItineraries.splice(index, 1);
+        }
+
+        closeModal();
+        // Refresh the page
+        if (appState.currentPage === "my_itinerary") {
+          renderApp();
+        }
+      }
+
+      // --- Chat Window Functions ---
+
+      function toggleChatWindow() {
+        const chatWindow = document.getElementById("chat-window");
+        // 如果私人聊天室是打开的，先关闭它
+        const privateChatWindow = document.getElementById(
+          "private-chat-window"
+        );
+        if (!privateChatWindow.classList.contains("hidden")) {
+          privateChatWindow.classList.add("hidden");
+        }
+
+        if (chatWindow.classList.contains("hidden")) {
+          chatWindow.classList.remove("hidden");
+          // Re-create icons when opening
+          lucide.createIcons();
+          // Focus on input
+          setTimeout(() => {
+            document.getElementById("chat-input")?.focus();
+          }, 100);
+        } else {
+          chatWindow.classList.add("hidden");
+        }
+      }
+
+      function sendChatMessage() {
+        const input = document.getElementById("chat-input");
+        const messagesContainer = document.getElementById("chat-messages");
+        const message = input.value.trim();
+
+        if (!message) return;
+
+        // Add user message
+        const userMessageHtml = `
+                <div class="flex items-start space-x-2 justify-end">
+                    <div class="bg-orange-500 text-white rounded-2xl rounded-tr-sm p-3 shadow-sm max-w-[80%]">
+                        <p class="text-sm">${message}</p>
+                    </div>
+                    <div class="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center flex-shrink-0">
+                        <i data-lucide="user" class="w-5 h-5 text-gray-600"></i>
+                    </div>
+                </div>
+            `;
+        messagesContainer.insertAdjacentHTML("beforeend", userMessageHtml);
+
+        // Clear input
+        input.value = "";
+
+        // Re-create icons
+        lucide.createIcons();
+
+        // Scroll to bottom
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+        // Simulate bot response (you can replace this with actual API call)
+        setTimeout(() => {
+          const botResponseHtml = `
+                    <div class="flex items-start space-x-2">
+                        <div class="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center flex-shrink-0">
+                            <i data-lucide="bot" class="w-5 h-5 text-white"></i>
+                        </div>
+                        <div class="bg-white rounded-2xl rounded-tl-sm p-3 shadow-sm max-w-[80%]">
+                            <p class="text-sm text-gray-800">感謝您的問題！我已經收到您的訊息。這是一個示範回應，您可以根據實際需求連接後端 API 來實現真正的聊天功能。</p>
+                        </div>
+                    </div>
+                `;
+          messagesContainer.insertAdjacentHTML("beforeend", botResponseHtml);
+          lucide.createIcons();
+          messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }, 500);
+      }
+
+      // --- Private Chat Window Functions ---
+
+      function togglePrivateChatWindow() {
+        const privateChatWindow = document.getElementById(
+          "private-chat-window"
+        );
+        // 如果AI助手聊天室是打开的，先关闭它
+        const aiChatWindow = document.getElementById("chat-window");
+        if (!aiChatWindow.classList.contains("hidden")) {
+          aiChatWindow.classList.add("hidden");
+        }
+
+        if (privateChatWindow.classList.contains("hidden")) {
+          privateChatWindow.classList.remove("hidden");
+          // Re-create icons when opening
+          lucide.createIcons();
+          // Focus on input
+          setTimeout(() => {
+            document.getElementById("private-chat-input")?.focus();
+          }, 100);
+        } else {
+          privateChatWindow.classList.add("hidden");
+        }
+      }
+
+      function sendPrivateChatMessage() {
+        const input = document.getElementById("private-chat-input");
+        const messagesContainer = document.getElementById(
+          "private-chat-messages"
+        );
+        const message = input.value.trim();
+
+        if (!message) return;
+
+        // Add user message
+        const userMessageHtml = `
+                <div class="flex items-start space-x-2 justify-end">
+                    <div class="bg-green-500 text-white rounded-2xl rounded-tr-sm p-3 shadow-sm max-w-[80%]">
+                        <p class="text-sm">${message}</p>
+                    </div>
+                    <div class="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center flex-shrink-0">
+                        <i data-lucide="user" class="w-5 h-5 text-gray-600"></i>
+                    </div>
+                </div>
+            `;
+        messagesContainer.insertAdjacentHTML("beforeend", userMessageHtml);
+
+        // Clear input
+        input.value = "";
+
+        // Re-create icons
+        lucide.createIcons();
+
+        // Scroll to bottom
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+        // Simulate response (you can replace this with actual API call)
+        setTimeout(() => {
+          const responseHtml = `
+                    <div class="flex items-start space-x-2">
+                        <div class="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0">
+                            <i data-lucide="user" class="w-5 h-5 text-white"></i>
+                        </div>
+                        <div class="bg-white rounded-2xl rounded-tl-sm p-3 shadow-sm max-w-[80%]">
+                            <p class="text-sm text-gray-800">已收到您的訊息！這是一個示範回應，您可以根據實際需求連接後端 API 來實現真正的私人聊天功能。</p>
+                        </div>
+                    </div>
+                `;
+          messagesContainer.insertAdjacentHTML("beforeend", responseHtml);
+          lucide.createIcons();
+          messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }, 500);
+      }
+
+      // Function to generate the Search and Filter UI
+      const getSearchFilterUI = (placeholder, filters) => {
+        return `
+                <div class="bg-white rounded-2xl p-4 mb-6 shadow-md border border-gray-100">
+                    <div class="relative mb-4">
+                        <input type="text" placeholder="${placeholder}" class="w-full py-3 pl-4 pr-12 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:outline-none transition text-sm">
+                        <i data-lucide="search" class="absolute right-3 top-3.5 w-5 h-5 text-gray-400"></i>
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                        ${filters.map((f) => `<button onclick="filterContent('${f.id}', '${f.label}')" id="filter-${f.id}" class="text-sm px-4 py-1.5 rounded-full border border-gray-300 bg-white text-gray-600 hover:bg-indigo-50 hover:border-indigo-500 hover:text-indigo-600 transition">${f.label}</button>`).join("")}
+                    </div>
+                </div>
+            `;
+      };
+
+      // Placeholder for filtering logic
+      function filterContent(filterId, filterLabel) {
+        // In a real app, this would update the content. Here it opens a modal.
+        openModal("filter_placeholder", filterLabel);
+      }
+
+      // --- Content Rendering Components ---
+
+      const renderArticle = (post) => {
+        const isFind = post.type === "find_traveler";
+        const isFavorited = appState.favorites.includes(post.id);
+        const isLiked = appState.likedPosts.includes(post.id);
+
+        const defaultAvatar =
+          "https://placehold.co/100x100/A0BFFF/ffffff?text=User";
+        const defaultPostImage =
+          "https://placehold.co/800x400/94A3B8/ffffff?text=Post+Image";
+
+        // Badge logic based on post type
+        let statusBadge = "";
+        if (isFind) {
+          // Only "Find Traveler" posts show the remaining participants needed
+          const needed = post.required - post.participants;
+          statusBadge = `<span class="ml-auto bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full font-bold">徵 ${needed > 0 ? needed : 0} 人</span>`;
+        }
+
+        // Get translated post type name
+        let postTypeName;
+        if (post.type === "find_traveler") postTypeName = "找旅伴";
+        else if (post.type === "featured_itinerary") postTypeName = "精選行程";
+        else postTypeName = "討論區";
+
+        return `
+            <div class="bg-white rounded-2xl p-5 mb-6 shadow-sm border border-gray-100 hover:shadow-md transition relative">
+                <div class="flex items-center space-x-3 mb-4">
+                    <!-- User Avatar -->
+                    <img src="${post.avatar}" onerror="this.onerror=null;this.src='${defaultAvatar}';" class="w-10 h-10 rounded-full object-cover">
+                    <div>
+                        <!-- Author and Spirit Animal -->
+                        <div class="flex items-center space-x-2">
+                            <span class="font-bold text-gray-800">${post.author}</span>
+                            ${post.spiritAnimal ? `<span class="text-xs font-semibold text-indigo-500 bg-indigo-50 px-2 py-0.5 rounded-full">${post.spiritAnimal}</span>` : ""}
+                        </div>
+                        <!-- Post Time and Type -->
+                        <div class="text-xs text-gray-400">${post.time} • ${postTypeName}</div>
+                    </div>
+                    ${statusBadge}
+                </div>
+                <h3 onclick="openModal('post_detail', ${post.id})" class="text-lg font-bold text-gray-900 mb-2 cursor-pointer hover:text-indigo-600">${post.title}</h3>
+                <p class="text-gray-600 text-sm mb-4 line-clamp-2">${post.content}</p>
+                <!-- Post Image (Optional) -->
+                ${post.image ? `<div class="w-full h-64 rounded-xl overflow-hidden mb-4"><img src="${post.image}" onerror="this.onerror=null;this.src='${defaultPostImage}';" class="w-full h-full object-cover hover:scale-105 transition duration-500"></div>` : ""}
+                <!-- Tags -->
+                <div class="flex gap-2 mb-4">
+                    ${post.tags.map((t) => `<span class="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-lg">#${t}</span>`).join("")}
+                </div>
+                <!-- Actions: Hearts, Comments, Share -->
+                <div class="flex items-center text-gray-400 text-sm border-t border-gray-50 pt-3">
+                    <button onclick="toggleLike(${post.id}); event.stopPropagation();" class="flex items-center space-x-1 hover:text-red-500 transition ${isLiked ? "text-red-500" : ""}">
+                        <i data-lucide="heart" class="w-4 h-4 ${isLiked ? "fill-red-500" : ""}"></i> 
+                        <span>${post.hearts}</span>
+                    </button>
+                    <button onclick="openPostModalWithComments(${post.id}); event.stopPropagation();" class="ml-6 flex items-center space-x-1 hover:text-indigo-600"><i data-lucide="message-circle" class="w-4 h-4"></i> <span>${post.comments}</span></button>
+                    <button class="ml-auto"><i data-lucide="share2" class="w-4 h-4"></i></button>
+                </div>
+                <!-- Favorite Bookmark Button (Bottom Right) -->
+                <button onclick="toggleFavorite(${post.id}); event.stopPropagation();" class="absolute bottom-5 right-5 p-2 ${isFavorited ? "bg-red-500 text-white" : "bg-gray-100 text-gray-400 hover:bg-gray-200"} rounded-full transition shadow-sm">
+                    <i data-lucide="bookmark" class="w-4 h-4 ${isFavorited ? "fill-white" : ""}"></i>
+                </button>
+            </div>`;
+      };
+
+      const renderTravelerGridCard = (post) => {
+        const defaultAvatar =
+          "https://placehold.co/100x100/A0BFFF/ffffff?text=User";
+        const defaultPostImage =
+          "https://placehold.co/800x400/94A3B8/ffffff?text=Travel+Post";
+        const needed = post.required - post.participants;
+        const isFavorited = appState.favorites.includes(post.id);
+        const isLiked = appState.likedPosts.includes(post.id);
+
+        return `
+            <div onclick="openModal('post_detail', ${post.id})" class="bg-white rounded-2xl overflow-hidden shadow-lg border border-gray-100 group flex flex-col hover:shadow-xl transition relative cursor-pointer">
+                <!-- Image Area & Status Badge -->
+                <div class="h-40 overflow-hidden relative">
+                    <img src="${post.image || defaultPostImage}" onerror="this.onerror=null;this.src='${defaultPostImage}';" class="w-full h-full object-cover group-hover:scale-105 transition duration-700">
+                    <span class="absolute top-3 right-3 bg-red-500 text-white text-xs px-2 py-1 rounded-full flex items-center shadow-md"><i data-lucide="users" class="w-3 h-3 mr-1"></i> 徵 ${needed > 0 ? needed : 0} 人</span>
+                    <span class="absolute top-3 left-3 bg-white/90 backdrop-blur text-xs font-bold px-2 py-1 rounded-md text-gray-600 shadow-sm">${post.tags[0]}</span>
+                </div>
+                
+                <div class="p-4 flex flex-col flex-grow">
+                    <!-- Title -->
+                    <h3 class="font-extrabold text-xl mb-3 text-gray-900 line-clamp-2">${post.title}</h3>
+                    
+                    <!-- Author/Spirit Animal & Location/Date -->
+                    <div class="flex items-center justify-between mb-3 border-b pb-3 border-gray-100">
+                        <!-- Left: Author -->
+                        <div class="flex items-center space-x-3">
+                            <img src="${post.avatar}" onerror="this.onerror=null;this.src='${defaultAvatar}';" class="w-8 h-8 rounded-full object-cover border-2 border-indigo-300">
+                            <div class="flex flex-col">
+                                <span class="text-sm font-bold text-gray-700">${post.author}</span>
+                                <span class="text-xs text-indigo-600 font-semibold">${post.spiritAnimal}</span>
+                            </div>
+                        </div>
+                        <!-- Right: Location and Date -->
+                        <div class="text-right text-xs text-gray-500 space-y-1">
+                            <div class="flex items-center justify-end">
+                                <i data-lucide="map-pin" class="w-3 h-3 mr-1 text-red-500"></i>
+                                <span class="truncate" title="${post.location}">${post.location}</span>
+                            </div>
+                            <div class="flex items-center justify-end">
+                                <i data-lucide="calendar" class="w-3 h-3 mr-1 text-green-500"></i>
+                                <span class="truncate" title="${post.date}">${post.date}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Content Preview -->
+                    <p class="text-gray-500 text-sm mb-4 line-clamp-3 flex-grow">${post.content}</p>
+
+                    <!-- Action Button -->
+                    <div class="mt-auto pt-3 border-t border-gray-100 flex justify-between items-center">
+                        <button onclick="toggleLike(${post.id}); event.stopPropagation();" class="flex items-center text-xs hover:text-red-500 transition ${isLiked ? "text-red-500" : "text-gray-400"}">
+                            <i data-lucide="heart" class="w-4 h-4 mr-1 ${isLiked ? "fill-red-500" : ""}"></i> ${post.hearts}
+                        </button>
+                        <button class="bg-indigo-600 text-white text-sm px-4 py-2 rounded-xl hover:bg-indigo-700 transition shadow-md hover:scale-[1.02]">
+                            <i data-lucide="message-circle" class="w-4 h-4 mr-1 inline-block"></i>
+                            有興趣
+                        </button>
+                    </div>
+                </div>
+                <!-- Favorite Bookmark Button (Bottom Right) -->
+                <button onclick="toggleFavorite(${post.id}); event.stopPropagation();" class="absolute bottom-4 right-4 p-2 ${isFavorited ? "bg-red-500 text-white" : "bg-white/90 text-gray-400 hover:bg-gray-200"} rounded-full transition shadow-sm">
+                    <i data-lucide="bookmark" class="w-4 h-4 ${isFavorited ? "fill-white" : ""}"></i>
+                </button>
+            </div>`;
+      };
+
+      // --- Render Pages ---
+
+      const renderHome = () => {
+        const travelers = appState.mockPosts.filter(
+          (p) => p.type === "find_traveler"
+        );
+        const discussions = appState.mockPosts.filter(
+          (p) => p.type === "discussion" || p.type === "featured_itinerary"
+        );
+        return `
+            <div class="flex flex-col lg:flex-row gap-6">
+                <div class="w-full lg:w-3/4">
+                    <!-- Horizontal Scroll Section (Featured Travelers) -->
+                    <div class="mb-8">
+                        <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center"><i data-lucide="sparkles" class="w-5 h-5 mr-2 text-yellow-500"></i> 旅伴推薦</h2>
+                        <div class="flex overflow-x-auto space-x-4 pb-4 custom-scrollbar snap-x">
+                            ${travelers
+                              .map((t) => {
+                                const defaultImage =
+                                  "https://placehold.co/800x400/5E8FF9/ffffff?text=Travel+Dream";
+                                const imageUrl = t.image || defaultImage;
+                                // Tailwind classes for dynamic background image
+                                const backgroundStyle = `background-image: url('${imageUrl}'); background-size: cover; background-position: center;`;
+
+                                return `
+                                <div style="${backgroundStyle}"
+                                    onclick="openModal('post_detail', ${t.id})"
+                                    class="flex-shrink-0 w-72 h-48 rounded-[2rem] p-5 border-4 border-gray-800 shadow-[6px_6px_0px_0px_rgba(31,41,55,1)] snap-center cursor-pointer hover:-translate-y-1 transition relative overflow-hidden">
+                                    
+                                    <!-- Dark Overlay for readability -->
+                                    <div class="absolute inset-0 bg-black/40 rounded-[1.8rem]"></div>
+
+                                    <!-- Content -->
+                                    <div class="relative z-10 h-full flex flex-col justify-between">
+                                        <!-- Top Badges -->
+                                        <div class="flex justify-between">
+                                            <span class="bg-indigo-500/90 text-white border-2 border-white px-2 py-0.5 text-xs font-bold rounded -rotate-2">${t.tags[0]}</span>
+                                            <span class="bg-red-500/90 text-white border-2 border-white px-2 py-0.5 text-xs font-bold rounded rotate-2">${t.participants}/${t.required}人</span>
+                                        </div>
+
+                                        <!-- Bottom Content -->
+                                        <div class="text-center mt-auto">
+                                            <h3 class="font-bold text-xl text-white leading-snug mb-3 line-clamp-2">${t.title}</h3>
+                                            <button onclick="event.stopPropagation(); openModal('post_detail', ${t.id})" class="text-xs bg-white text-gray-800 border-2 border-gray-800 px-4 py-2 rounded-full font-extrabold hover:bg-gray-100 shadow-md transition">
+                                                探索行程
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                `;
+                              })
+                              .join("")}
+                        </div>
+                    </div>
+                    <!-- Latest Articles -->
+                    <div>
+                        <h2 class="text-xl font-bold text-gray-800 mb-4">最新動態</h2>
+                        ${discussions.map(renderArticle).join("")}
+                    </div>
+                </div>
+                <!-- Sidebar Ad/Sponsor (Desktop Only) -->
+                <div class="hidden lg:block w-1/4 space-y-4">
+                    <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 sticky top-24">
+                        <h3 class="font-bold text-gray-800 mb-3 text-center">贊助廣告</h3>
+                        <div class="h-40 bg-gray-100 rounded-xl flex items-center justify-center text-gray-400 text-sm border-2 border-dashed border-gray-300">廣告招商中</div>
+                    </div>
+                </div>
+            </div>`;
+      };
+
+      const renderDiscussion = () => {
+        const posts = appState.mockPosts.filter((p) => p.type === "discussion");
+        const filters = [
+          { id: "all", label: "全部" },
+          { id: "latest", label: "最新" },
+          { id: "liked", label: "有按讚" },
+          { id: "nearby", label: "找附近" },
+        ];
+        const searchUI = getSearchFilterUI("搜尋關鍵字、標籤...", filters);
+
+        return `
+             <div class="max-w-4xl mx-auto">
+                <!-- Header -->
+                <div class="bg-orange-50 rounded-2xl p-6 mb-8 flex justify-between items-center border border-orange-100">
+                    <div>
+                        <h1 class="text-2xl font-bold text-orange-600">討論區</h1>
+                        <p class="text-orange-400 text-sm">分享你的旅行故事與經驗</p>
+                    </div>
+                    <button onclick="openModal('posting_choice')" class="bg-orange-500 text-white px-4 py-2 rounded-xl shadow hover:bg-orange-600 transition flex items-center"><i data-lucide="plus" class="w-4 h-4 mr-1"></i> 新增話題</button>
+                </div>
+                ${searchUI}
+                <!-- Posts List -->
+                ${posts.map(renderArticle).join("")}
+             </div>`;
+      };
+
+      const renderFindTraveler = () => {
+        const posts = appState.mockPosts.filter(
+          (p) => p.type === "find_traveler"
+        );
+        const filters = [
+          { id: "all", label: "全部" },
+          { id: "latest", label: "最新" },
+          { id: "liked", label: "有按讚" },
+          { id: "closed", label: "已找到/已截止" },
+          { id: "nearby", label: "找附近" },
+        ];
+        const searchUI = getSearchFilterUI("搜尋目的地、出發日期...", filters);
+
+        return `
+            <div class="max-w-6xl mx-auto">
+                 <!-- Header -->
+                 <div class="bg-green-50 rounded-2xl p-6 mb-8 flex justify-between items-center border border-green-100">
+                    <div>
+                        <h1 class="text-2xl font-bold text-green-600">找旅伴</h1>
+                        <p class="text-green-500 text-sm">尋找志同道合的旅行夥伴</p>
+                    </div>
+                    <button onclick="openModal('posting_choice')" class="bg-green-500 text-white px-4 py-2 rounded-xl shadow hover:bg-green-600 transition flex items-center"><i data-lucide="plus" class="w-4 h-4 mr-1"></i> 發起徵伴</button>
+                </div>
+                ${searchUI}
+                <!-- Grid View for Traveler Posts (2 columns on medium screens and up) -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6"> 
+                    ${posts.map(renderTravelerGridCard).join("")}
+                </div>
+            </div>`;
+      };
+
+      const renderFeaturedItinerary = () => {
+        const posts = appState.mockPosts.filter(
+          (p) => p.type === "featured_itinerary"
+        );
+
+        const filters = [
+          { id: "all", label: "全部" },
+          { id: "latest", label: "最新" },
+          { id: "popular", label: "熱門" },
+          { id: "top_rated", label: "高評分" },
+        ];
+        const searchUI = getSearchFilterUI("搜尋國家、主題...", filters);
+
+        return `
+            <div class="max-w-4xl mx-auto">
+                <!-- Header -->
+                <div class="bg-yellow-50 rounded-2xl p-6 mb-8 flex justify-between items-center border border-yellow-100">
+                    <div>
+                        <h1 class="text-2xl font-bold text-yellow-600">精選行程</h1>
+                        <p class="text-yellow-500 text-sm">參考達人行程，輕鬆規劃旅程</p>
+                    </div>
+                    <button onclick="openModal('future_feature')" class="bg-yellow-500 text-white px-4 py-2 rounded-xl shadow hover:bg-yellow-600 transition flex items-center"><i data-lucide="sparkles" class="w-4 h-4 mr-1"></i> 規劃新行程</button>
+                </div>
+                ${searchUI}
+                <!-- Posts List -->
+                <div>
+                    ${posts.map(renderArticle).join("")}
+                </div>
+            </div>`;
+      };
+
+      // --- My Itinerary Page Components ---
+
+      const renderItineraryItem = (item) => `
+            <!-- 點擊後打開詳細行程圖示化視圖 -->
+            <div onclick="openModal('itinerary_edit', '${item.id}')" class="p-4 rounded-xl border-2 border-gray-200 cursor-pointer hover:bg-indigo-50 hover:border-indigo-400 transition shadow-sm mb-4">
+                <h4 class="font-bold text-lg text-gray-800">${item.title}</h4>
+                <p class="text-sm text-gray-500">${item.startDate || ""} - ${item.endDate || ""}</p>
+            </div>
+        `;
+
+      const renderDraftItem = (draft) => {
+        return `
+                <div onclick="openModal('future_feature')" class="p-4 rounded-xl border border-gray-200 mb-4 cursor-pointer hover:bg-yellow-50 transition shadow-sm">
+                    <div class="flex items-center space-x-2 mb-1">
+                        <!-- Badge for draft type -->
+                        <span class="text-xs font-bold text-white px-2 py-0.5 rounded ${draft.type === "discussion" ? "bg-indigo-500" : "bg-green-500"}">${draft.type === "discussion" ? "討論區" : "找旅伴"}</span>
+                        <span class="text-xs text-gray-400">儲存於: ${draft.savedAt}</span>
+                    </div>
+                    <h4 class="font-bold text-gray-800 line-clamp-1">${draft.title}</h4>
+                    <p class="text-sm text-gray-500 line-clamp-2">${draft.contentPreview}</p>
+                </div>
+            `;
+      };
+
+      const renderMyItinerary = () => {
+        const mockItineraries = appState.mockItineraries;
+        const mockDrafts = appState.mockDrafts;
+
+        return `
+            <div class="max-w-6xl mx-auto p-4">
+                <h1 class="text-3xl font-extrabold text-gray-900 mb-6">我的行程</h1>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    
+                    <!-- Itinerary List (Left/2/3 width) -->
+                    <div class="lg:col-span-2 bg-white rounded-3xl p-6 shadow-xl border border-gray-100 h-fit">
+                        <div class="flex items-center mb-6 border-b pb-4">
+                            <i data-lucide="calendar-check" class="w-8 h-8 text-indigo-600 mr-3"></i>
+                            <div>
+                                <h2 class="text-xl font-bold text-gray-800">行程列表</h2>
+                                <p class="text-sm text-gray-500">查看並管理你的旅遊行程</p>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-4 mb-6">
+                            ${mockItineraries.map(renderItineraryItem).join("")}
+                        </div>
+                        
+                        <button onclick="openModal('itinerary_edit', null)" class="w-full bg-indigo-600 text-white py-3 rounded-xl font-bold hover:bg-indigo-700 transition flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl">
+                            <i data-lucide="plus" class="w-5 h-5"></i>
+                            <span>新增行程</span>
+                        </button>
+                    </div>
+                    
+                    <!-- Drafts Folder (Right/1/3 width) -->
+                    <div class="lg:col-span-1 bg-white rounded-3xl p-6 shadow-xl border border-gray-100 h-fit">
+                        <div class="flex items-center mb-6 border-b pb-4">
+                            <i data-lucide="folder-output" class="w-8 h-8 text-yellow-600 mr-3"></i>
+                            <div>
+                                <h2 class="text-xl font-bold text-gray-800">草稿夾</h2>
+                                <p class="text-sm text-gray-500">查看你儲存的貼文草稿</p>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            ${mockDrafts.map(renderDraftItem).join("")}
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+            `;
+      };
+
+      // --- Like Functions ---
+
+      function toggleLike(postId) {
+        const index = appState.likedPosts.indexOf(postId);
+        if (index > -1) {
+          // Remove from liked posts
+          appState.likedPosts.splice(index, 1);
+          // Decrease like count
+          const post = appState.mockPosts.find((p) => p.id === postId);
+          if (post) post.hearts = Math.max(0, post.hearts - 1);
+        } else {
+          // Add to liked posts
+          appState.likedPosts.push(postId);
+          // Increase like count
+          const post = appState.mockPosts.find((p) => p.id === postId);
+          if (post) post.hearts = (post.hearts || 0) + 1;
+        }
+        // Re-render to update UI
+        renderApp();
+        // Re-create icons to update filled state
+        lucide.createIcons();
+      }
+
+      // --- Favorite Functions ---
+
+      function toggleFavorite(postId) {
+        const index = appState.favorites.indexOf(postId);
+        if (index > -1) {
+          // Remove from favorites
+          appState.favorites.splice(index, 1);
+        } else {
+          // Add to favorites
+          appState.favorites.push(postId);
+        }
+        // Re-render to update UI
+        renderApp();
+        // Re-create icons to update filled state
+        lucide.createIcons();
+      }
+
+      function renderFavorites() {
+        const favoritePosts = appState.mockPosts.filter((post) =>
+          appState.favorites.includes(post.id)
+        );
+
+        if (favoritePosts.length === 0) {
+          return `
+            <div class="max-w-4xl mx-auto">
+              <div class="bg-white rounded-2xl p-12 text-center shadow-sm border border-gray-100">
+                <i data-lucide="heart" class="w-16 h-16 text-gray-300 mx-auto mb-4"></i>
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">還沒有收藏的貼文</h2>
+                <p class="text-gray-500 mb-6">點擊貼文上的愛心或收藏標籤來收藏你喜歡的內容</p>
+                <button onclick="navigate('home')" class="px-6 py-2 bg-indigo-600 text-white rounded-full font-semibold hover:bg-indigo-700 transition">
+                  去探索貼文
+                </button>
+              </div>
+            </div>
+          `;
+        }
+
+        return `
+          <div class="max-w-4xl mx-auto">
+            <div class="mb-6">
+              <h1 class="text-3xl font-extrabold text-gray-900 mb-2">我的收藏</h1>
+              <p class="text-gray-500">共 ${favoritePosts.length} 則收藏的貼文</p>
+            </div>
+            ${favoritePosts.map(renderArticle).join("")}
+          </div>
+        `;
+      }
+
+      // --- Post Detail Page Functions ---
+
+      function navigateToPost(postId) {
+        appState.currentPostId = postId;
+        appState.currentPage = "post_detail";
+        renderApp();
+        window.scrollTo(0, 0);
+      }
+
+      function renderPostDetail() {
+        const postId = appState.currentPostId;
+        const post = appState.mockPosts.find((p) => p.id === postId);
+        if (!post) {
+          return `<div class="p-10 text-center text-gray-500">找不到文章</div>`;
+        }
+
+        const isFavorited = appState.favorites.includes(postId);
+        const isLiked = appState.likedPosts.includes(postId);
+        const comments = appState.mockComments[postId] || [];
+        const sortedComments = sortCommentsList(comments, appState.commentSort);
+
+        const defaultAvatar =
+          "https://placehold.co/100x100/A0BFFF/ffffff?text=User";
+        const defaultPostImage =
+          "https://placehold.co/800x400/94A3B8/ffffff?text=Post+Image";
+
+        return `
+          <div class="flex flex-col lg:flex-row gap-6">
+            <!-- Main Content -->
+            <div class="w-full lg:w-3/4">
+            <!-- Back Button -->
+            <button onclick="navigate('discussion')" class="mb-4 flex items-center text-gray-600 hover:text-indigo-600 transition">
+              <i data-lucide="arrow-left" class="w-5 h-5 mr-2"></i>
+              <span>返回討論區</span>
+            </button>
+
+            <!-- Article Section -->
+            <div class="bg-white rounded-2xl p-6 mb-6 shadow-sm border border-gray-100">
+              <!-- Title with Tags -->
+              <div class="mb-4">
+                <div class="flex gap-2 mb-3">
+                  ${post.tags
+                    .map(
+                      (t) =>
+                        `<span class="text-xs bg-orange-100 text-orange-600 px-2 py-1 rounded-lg font-semibold">#${t}</span>`
+                    )
+                    .join("")}
+                </div>
+                <h1 class="text-3xl font-bold text-gray-900 mb-4">${post.title}</h1>
+              </div>
+
+              <!-- Author Info -->
+              <div class="flex items-center justify-between mb-4 pb-4 border-b border-gray-100">
+                <div class="flex items-center space-x-3">
+                  <img src="${post.avatar}" onerror="this.onerror=null;this.src='${defaultAvatar}';" class="w-12 h-12 rounded-full object-cover">
+                  <div>
+                    <div class="flex items-center space-x-2">
+                      <span class="font-bold text-gray-800">${post.author}</span>
+                      ${post.spiritAnimal ? `<span class="text-xs font-semibold text-indigo-500 bg-indigo-50 px-2 py-0.5 rounded-full">${post.spiritAnimal}</span>` : ""}
+                      ${post.isAuthor ? `<span class="text-xs font-semibold text-orange-500 bg-orange-50 px-2 py-0.5 rounded-full">作者</span>` : ""}
+                    </div>
+                    <div class="text-xs text-gray-400">${post.time}</div>
+                  </div>
+                </div>
+                <button class="px-4 py-2 bg-indigo-600 text-white rounded-full text-sm font-semibold hover:bg-indigo-700 transition">
+                  追蹤
+                </button>
+              </div>
+
+              <!-- Article Content -->
+              <div class="mb-6">
+                <p class="text-gray-800 leading-relaxed whitespace-pre-line">${post.content}</p>
+              </div>
+
+              <!-- Post Image -->
+              ${
+                post.image
+                  ? `<div class="w-full rounded-xl overflow-hidden mb-6"><img src="${post.image}" onerror="this.onerror=null;this.src='${defaultPostImage}';" class="w-full h-auto object-cover"></div>`
+                  : ""
+              }
+
+              <!-- Action Bar -->
+              <div class="flex items-center justify-between pt-4 border-t border-gray-100">
+                <div class="flex items-center space-x-6 text-gray-400">
+                  <button onclick="toggleLike(${postId})" class="flex items-center space-x-2 hover:text-red-500 transition ${isLiked ? "text-red-500" : ""}">
+                    <i data-lucide="heart" class="w-5 h-5 ${isLiked ? "fill-red-500" : ""}"></i>
+                    <span class="text-sm font-semibold">${post.hearts}</span>
+                  </button>
+                  <button class="flex items-center space-x-2 hover:text-indigo-600 transition">
+                    <i data-lucide="message-circle" class="w-5 h-5"></i>
+                    <span class="text-sm font-semibold">${post.comments}</span>
+                  </button>
+                </div>
+                <div class="flex items-center space-x-4">
+                  <button onclick="toggleFavorite(${postId})" class="p-2 ${isFavorited ? "bg-red-500 text-white" : "hover:bg-gray-100"} rounded-full transition">
+                    <i data-lucide="bookmark" class="w-5 h-5 ${isFavorited ? "fill-white" : "text-gray-400"}"></i>
+                  </button>
+                  <button class="p-2 hover:bg-gray-100 rounded-full transition">
+                    <i data-lucide="share-2" class="w-5 h-5 text-gray-400"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Comments Section -->
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+              <div class="mb-6">
+                <h2 class="text-xl font-bold text-gray-800 mb-4">留言(${comments.length})</h2>
+                
+                <!-- Comment Input -->
+                <div class="mb-4">
+                  <textarea id="comment-input" placeholder="寫下你的留言..." class="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:outline-none resize-none" rows="3"></textarea>
+                  <div class="flex items-center justify-between mt-3">
+                    <div class="flex items-center space-x-2">
+                      <button class="p-2 hover:bg-gray-100 rounded-full transition" title="上傳圖片、MP4">
+                        <i data-lucide="image" class="w-5 h-5 text-gray-400"></i>
+                      </button>
+                      <button class="p-2 hover:bg-gray-100 rounded-full transition" title="上傳 GIF">
+                        <i data-lucide="file-image" class="w-5 h-5 text-gray-400"></i>
+                      </button>
+                      <button class="p-2 hover:bg-gray-100 rounded-full transition" title="插入 emoji">
+                        <i data-lucide="smile" class="w-5 h-5 text-gray-400"></i>
+                      </button>
+                    </div>
+                    <button onclick="submitComment(${postId})" class="px-6 py-2 bg-indigo-600 text-white rounded-full font-semibold hover:bg-indigo-700 transition">
+                      發表
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Sort Buttons -->
+                <div class="flex items-center space-x-2 mb-4 pb-4 border-b border-gray-100">
+                  <button onclick="sortComments('hot', ${postId})" class="px-4 py-1.5 rounded-full text-sm font-semibold transition ${appState.commentSort === "hot" ? "bg-indigo-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}">
+                    熱門
+                  </button>
+                  <button onclick="sortComments('newest', ${postId})" class="px-4 py-1.5 rounded-full text-sm font-semibold transition ${appState.commentSort === "newest" ? "bg-indigo-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}">
+                    由新至舊
+                  </button>
+                  <button onclick="sortComments('oldest', ${postId})" class="px-4 py-1.5 rounded-full text-sm font-semibold transition ${appState.commentSort === "oldest" ? "bg-indigo-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}">
+                    由舊至新
+                  </button>
+                </div>
+
+                <!-- Comments List -->
+                <div id="comments-list" class="space-y-6">
+                  ${renderCommentsList(sortedComments, postId)}
+                </div>
+              </div>
+            </div>
+            </div>
+            
+            <!-- Right Sidebar Ad (Desktop Only) -->
+            <div class="hidden lg:block w-1/4 space-y-4">
+              <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 sticky top-24">
+                <h3 class="font-bold text-gray-800 mb-3 text-center">金主爸爸 進駐廣告</h3>
+                <div class="h-40 bg-gray-100 rounded-xl flex items-center justify-center text-gray-400 text-sm border-2 border-dashed border-gray-300">廣告招商中</div>
+              </div>
+              <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 sticky top-24">
+                <h3 class="font-bold text-gray-800 mb-3 text-center">金主媽媽 進駐廣告</h3>
+                <div class="h-40 bg-gray-100 rounded-xl flex items-center justify-center text-gray-400 text-sm border-2 border-dashed border-gray-300">廣告招商中</div>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      function renderCommentsList(comments, postId) {
+        if (comments.length === 0) {
+          return `<div class="text-center text-gray-400 py-8">還沒有留言，快來搶頭香吧！</div>`;
+        }
+
+        return comments
+          .map((comment) => {
+            const repliesHtml = comment.replies
+              ? comment.replies
+                  .map(
+                    (reply) => `
+                  <div class="ml-12 mt-4 pl-4 border-l-2 border-gray-200">
+                    <div class="flex items-start space-x-3">
+                      <img src="${reply.avatar}" onerror="this.onerror=null;this.src='https://placehold.co/100x100/A0BFFF/ffffff?text=User';" class="w-8 h-8 rounded-full object-cover flex-shrink-0">
+                      <div class="flex-1">
+                        <div class="flex items-center space-x-2 mb-1">
+                          <span class="font-bold text-sm text-gray-800">${reply.author}</span>
+                          ${reply.spiritAnimal ? `<span class="text-xs font-semibold text-indigo-500 bg-indigo-50 px-2 py-0.5 rounded-full">${reply.spiritAnimal}</span>` : ""}
+                          <span class="text-xs text-gray-400">${reply.time}</span>
+                        </div>
+                        <p class="text-sm text-gray-700 mb-2">${reply.content}</p>
+                        <button class="text-xs text-gray-400 hover:text-indigo-600 transition">
+                          <i data-lucide="thumbs-up" class="w-3 h-3 inline mr-1"></i>
+                          ${reply.likes}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                `
+                  )
+                  .join("")
+              : "";
+
+            return `
+              <div class="comment-item">
+                <div class="flex items-start space-x-3">
+                  <img src="${comment.avatar}" onerror="this.onerror=null;this.src='https://placehold.co/100x100/A0BFFF/ffffff?text=User';" class="w-10 h-10 rounded-full object-cover flex-shrink-0">
+                  <div class="flex-1">
+                    <div class="flex items-center space-x-2 mb-1">
+                      <span class="font-bold text-gray-800">${comment.author}</span>
+                      ${comment.isAuthor ? `<span class="text-xs font-semibold text-orange-500 bg-orange-50 px-2 py-0.5 rounded-full">作者</span>` : ""}
+                      <span class="text-xs text-gray-400">${comment.time}</span>
+                    </div>
+                    <p class="text-gray-700 mb-2">${comment.content}</p>
+                    <div class="flex items-center space-x-4 text-sm text-gray-400">
+                      <button class="flex items-center space-x-1 hover:text-indigo-600 transition">
+                        <i data-lucide="thumbs-up" class="w-4 h-4"></i>
+                        <span>${comment.likes}</span>
+                      </button>
+                      <button onclick="showReplyInput('${comment.id}', ${postId})" class="flex items-center space-x-1 hover:text-indigo-600 transition">
+                        <i data-lucide="message-circle" class="w-4 h-4"></i>
+                        <span>回覆</span>
+                      </button>
+                    </div>
+                    ${repliesHtml}
+                    <div id="reply-input-${comment.id}" class="hidden mt-4 ml-12">
+                      <textarea id="reply-text-${comment.id}" placeholder="回覆 ${comment.author}..." class="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:outline-none resize-none text-sm" rows="2"></textarea>
+                      <div class="flex justify-end mt-2">
+                        <button onclick="cancelReply('${comment.id}')" class="px-4 py-1.5 text-sm text-gray-600 hover:text-gray-800 mr-2">取消</button>
+                        <button onclick="submitReply('${comment.id}', ${postId})" class="px-4 py-1.5 bg-indigo-600 text-white rounded-full text-sm font-semibold hover:bg-indigo-700 transition">發表</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            `;
+          })
+          .join("");
+      }
+
+      function sortCommentsList(comments, sortType) {
+        const sorted = [...comments];
+        switch (sortType) {
+          case "hot":
+            return sorted.sort((a, b) => b.likes - a.likes);
+          case "newest":
+            return sorted.sort((a, b) => {
+              // Simple time-based sorting (in real app, use actual timestamps)
+              return a.time.localeCompare(b.time);
+            });
+          case "oldest":
+            return sorted.sort((a, b) => {
+              return b.time.localeCompare(a.time);
+            });
+          default:
+            return sorted;
+        }
+      }
+
+      function sortComments(sortType, postId) {
+        appState.commentSort = sortType;
+        renderApp();
+      }
+
+      function showReplyInput(commentId, postId) {
+        const replyInput = document.getElementById(`reply-input-${commentId}`);
+        if (replyInput) {
+          replyInput.classList.remove("hidden");
+          document.getElementById(`reply-text-${commentId}`)?.focus();
+        }
+      }
+
+      function cancelReply(commentId) {
+        const replyInput = document.getElementById(`reply-input-${commentId}`);
+        if (replyInput) {
+          replyInput.classList.add("hidden");
+          document.getElementById(`reply-text-${commentId}`).value = "";
+        }
+      }
+
+      function submitReply(commentId, postId) {
+        const replyText = document
+          .getElementById(`reply-text-${commentId}`)
+          ?.value.trim();
+        if (!replyText) return;
+
+        // In a real app, this would send to backend
+        const comments = appState.mockComments[postId] || [];
+        const comment = comments.find((c) => c.id === commentId);
+        if (comment) {
+          const newReply = {
+            id: `r${Date.now()}`,
+            author: appState.currentUser.name,
+            avatar: appState.currentUser.avatar,
+            time: "剛剛",
+            content: replyText,
+            likes: 0,
+          };
+          comment.replies = comment.replies || [];
+          comment.replies.push(newReply);
+          renderApp();
+        }
+      }
+
+      function submitComment(postId) {
+        const commentInput = document.getElementById("comment-input");
+        const content = commentInput?.value.trim();
+        if (!content) return;
+
+        // In a real app, this would send to backend
+        if (!appState.mockComments[postId]) {
+          appState.mockComments[postId] = [];
+        }
+
+        const newComment = {
+          id: `c${Date.now()}`,
+          author: appState.currentUser.name,
+          avatar: appState.currentUser.avatar,
+          time: "剛剛",
+          content: content,
+          likes: 0,
+          replies: [],
+        };
+
+        appState.mockComments[postId].push(newComment);
+        commentInput.value = "";
+        renderApp();
+      }
+
+      // --- Profile Page Functions ---
+
+      function renderProfile() {
+        const user = appState.currentUser;
+        const userPosts = appState.mockPosts.filter(
+          (p) => p.author === user.name
+        );
+        const favoriteCount = appState.favorites.length;
+        const likedCount = appState.likedPosts.length;
+
+        return `
+          <div class="max-w-6xl mx-auto">
+            <!-- Profile Header -->
+            <div class="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-3xl p-8 mb-6 text-white relative overflow-hidden">
+              <div class="absolute inset-0 bg-black/10"></div>
+              <div class="relative z-10">
+                <div class="flex flex-col md:flex-row items-start md:items-center space-y-4 md:space-y-0 md:space-x-6">
+                  <!-- Avatar -->
+                  <div class="relative">
+                    <img src="${user.avatar}" class="w-32 h-32 rounded-full border-4 border-white shadow-xl object-cover">
+                    <button class="absolute bottom-0 right-0 p-2 bg-indigo-600 rounded-full border-2 border-white hover:bg-indigo-700 transition">
+                      <i data-lucide="camera" class="w-4 h-4 text-white"></i>
+                    </button>
+                  </div>
+                  
+                  <!-- User Info -->
+                  <div class="flex-1">
+                    <h1 class="text-3xl font-bold mb-2">${user.name}</h1>
+                    <p class="text-indigo-100 mb-4">會員編號: #${Math.floor(Math.random() * 10000)}</p>
+                    
+                    <!-- Stats -->
+                    <div class="flex flex-wrap gap-6">
+                      <div class="bg-white/20 backdrop-blur rounded-xl px-4 py-2">
+                        <div class="text-2xl font-bold">${userPosts.length}</div>
+                        <div class="text-sm text-indigo-100">發文數</div>
+                      </div>
+                      <div class="bg-white/20 backdrop-blur rounded-xl px-4 py-2">
+                        <div class="text-2xl font-bold">${favoriteCount}</div>
+                        <div class="text-sm text-indigo-100">收藏</div>
+                      </div>
+                      <div class="bg-white/20 backdrop-blur rounded-xl px-4 py-2">
+                        <div class="text-2xl font-bold">${likedCount}</div>
+                        <div class="text-sm text-indigo-100">按讚</div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <!-- Edit Button -->
+                  <button class="px-6 py-2 bg-white text-indigo-600 rounded-full font-semibold hover:bg-indigo-50 transition shadow-lg">
+                    <i data-lucide="edit" class="w-4 h-4 inline mr-2"></i>
+                    編輯資料
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Profile Content Tabs -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 mb-6">
+              <div class="border-b border-gray-200">
+                <div class="flex space-x-1 p-2">
+                  <button onclick="switchProfileTab('posts')" id="profile-tab-posts" class="flex-1 px-4 py-3 text-center font-semibold rounded-lg hover:bg-gray-50 transition profile-tab active bg-indigo-50 text-indigo-600">
+                    <i data-lucide="file-text" class="w-5 h-5 inline mr-2"></i>
+                    我的發文
+                  </button>
+                  <button onclick="switchProfileTab('favorites')" id="profile-tab-favorites" class="flex-1 px-4 py-3 text-center font-semibold rounded-lg hover:bg-gray-50 transition profile-tab text-gray-600">
+                    <i data-lucide="heart" class="w-5 h-5 inline mr-2"></i>
+                    我的收藏
+                  </button>
+                  <button onclick="switchProfileTab('settings')" id="profile-tab-settings" class="flex-1 px-4 py-3 text-center font-semibold rounded-lg hover:bg-gray-50 transition profile-tab text-gray-600">
+                    <i data-lucide="settings" class="w-5 h-5 inline mr-2"></i>
+                    帳號設定
+                  </button>
+                </div>
+              </div>
+
+              <!-- Tab Content -->
+              <div id="profile-content" class="p-6">
+                <!-- My Posts Tab -->
+                <div id="profile-posts-content" class="profile-content-section">
+                  ${
+                    userPosts.length > 0
+                      ? `<div class="space-y-4">${userPosts.map(renderArticle).join("")}</div>`
+                      : `<div class="text-center py-12 text-gray-400">
+                        <i data-lucide="file-text" class="w-16 h-16 mx-auto mb-4 opacity-50"></i>
+                        <p class="text-lg">還沒有發文</p>
+                        <p class="text-sm mt-2">快去分享你的旅遊經驗吧！</p>
+                      </div>`
+                  }
+                </div>
+
+                <!-- My Favorites Tab -->
+                <div id="profile-favorites-content" class="profile-content-section hidden">
+                  ${
+                    favoriteCount > 0
+                      ? `<div class="space-y-4">${appState.mockPosts
+                          .filter((p) => appState.favorites.includes(p.id))
+                          .map(renderArticle)
+                          .join("")}</div>`
+                      : `<div class="text-center py-12 text-gray-400">
+                        <i data-lucide="heart" class="w-16 h-16 mx-auto mb-4 opacity-50"></i>
+                        <p class="text-lg">還沒有收藏</p>
+                        <p class="text-sm mt-2">點擊貼文上的收藏按鈕來收藏你喜歡的內容</p>
+                      </div>`
+                  }
+                </div>
+
+                <!-- Settings Tab -->
+                <div id="profile-settings-content" class="profile-content-section hidden">
+                  <div class="space-y-6">
+                    <div class="border-b border-gray-200 pb-6">
+                      <h3 class="text-lg font-bold text-gray-800 mb-4">基本資料</h3>
+                      <div class="space-y-4">
+                        <div>
+                          <label class="block text-sm font-medium text-gray-700 mb-2">顯示名稱</label>
+                          <input type="text" value="${user.name}" class="w-full px-4 py-2 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:outline-none">
+                        </div>
+                        <div>
+                          <label class="block text-sm font-medium text-gray-700 mb-2">電子郵件</label>
+                          <input type="email" value="user@example.com" class="w-full px-4 py-2 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:outline-none">
+                        </div>
+                        <div>
+                          <label class="block text-sm font-medium text-gray-700 mb-2">個人簡介</label>
+                          <textarea rows="3" placeholder="介紹一下自己..." class="w-full px-4 py-2 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:outline-none resize-none"></textarea>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="border-b border-gray-200 pb-6">
+                      <h3 class="text-lg font-bold text-gray-800 mb-4">通知設定</h3>
+                      <div class="space-y-3">
+                        <label class="flex items-center justify-between cursor-pointer">
+                          <span class="text-gray-700">接收新留言通知</span>
+                          <input type="checkbox" checked class="w-5 h-5 text-indigo-600 rounded focus:ring-indigo-500">
+                        </label>
+                        <label class="flex items-center justify-between cursor-pointer">
+                          <span class="text-gray-700">接收按讚通知</span>
+                          <input type="checkbox" checked class="w-5 h-5 text-indigo-600 rounded focus:ring-indigo-500">
+                        </label>
+                        <label class="flex items-center justify-between cursor-pointer">
+                          <span class="text-gray-700">接收系統公告</span>
+                          <input type="checkbox" class="w-5 h-5 text-indigo-600 rounded focus:ring-indigo-500">
+                        </label>
+                      </div>
+                    </div>
+
+                    <div>
+                      <h3 class="text-lg font-bold text-gray-800 mb-4">帳號管理</h3>
+                      <div class="space-y-3">
+                        <button class="w-full text-left px-4 py-3 bg-gray-50 hover:bg-gray-100 rounded-xl transition">
+                          <div class="font-semibold text-gray-800">變更密碼</div>
+                          <div class="text-sm text-gray-500">定期更新密碼以保護帳號安全</div>
+                        </button>
+                        <button class="w-full text-left px-4 py-3 bg-gray-50 hover:bg-gray-100 rounded-xl transition">
+                          <div class="font-semibold text-gray-800">隱私設定</div>
+                          <div class="text-sm text-gray-500">管理你的隱私和資料可見性</div>
+                        </button>
+                        <button class="w-full text-left px-4 py-3 bg-red-50 hover:bg-red-100 rounded-xl transition text-red-600">
+                          <div class="font-semibold">刪除帳號</div>
+                          <div class="text-sm">永久刪除你的帳號和所有資料</div>
+                        </button>
+                      </div>
+                    </div>
+
+                    <div class="pt-4">
+                      <button class="w-full px-6 py-3 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700 transition">
+                        儲存變更
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      function switchProfileTab(tab) {
+        // Hide all content sections
+        document
+          .querySelectorAll(".profile-content-section")
+          .forEach((section) => {
+            section.classList.add("hidden");
+          });
+
+        // Remove active class from all tabs
+        document.querySelectorAll(".profile-tab").forEach((btn) => {
+          btn.classList.remove("active", "bg-indigo-50", "text-indigo-600");
+          btn.classList.add("text-gray-600");
+        });
+
+        // Show selected content
+        const contentSection = document.getElementById(
+          `profile-${tab}-content`
+        );
+        const tabButton = document.getElementById(`profile-tab-${tab}`);
+
+        if (contentSection) {
+          contentSection.classList.remove("hidden");
+        }
+
+        if (tabButton) {
+          tabButton.classList.add("active", "bg-indigo-50", "text-indigo-600");
+          tabButton.classList.remove("text-gray-600");
+        }
+      }
+
+      // Main Render Function
+      function renderApp() {
+        const main = document.getElementById("main-content");
+        if (appState.currentPage === "home") main.innerHTML = renderHome();
+        else if (appState.currentPage === "discussion")
+          main.innerHTML = renderDiscussion();
+        else if (appState.currentPage === "find_traveler")
+          main.innerHTML = renderFindTraveler();
+        else if (appState.currentPage === "featured_itinerary")
+          main.innerHTML = renderFeaturedItinerary();
+        // Render My Itinerary page
+        else if (appState.currentPage === "my_itinerary")
+          main.innerHTML = renderMyItinerary();
+        // Render Favorites page
+        else if (appState.currentPage === "favorites")
+          main.innerHTML = renderFavorites();
+        // Render Post Detail page
+        else if (appState.currentPage === "post_detail")
+          main.innerHTML = renderPostDetail();
+        // Render Profile page
+        else if (appState.currentPage === "profile")
+          main.innerHTML = renderProfile();
+        // Default placeholder for other pages
+        else
+          main.innerHTML = `<div class="p-10 text-center text-gray-500">頁面開發中...</div>`;
+        // Initialize Lucide icons after content is loaded
+        lucide.createIcons();
+      }
+
+      // Init: Run when the document is fully loaded
+      document.addEventListener("DOMContentLoaded", () => {
+        navigate(appState.currentPage); // Renders the initial page
+        // Ensure the correct initial navigation item is highlighted
+        const initialNav = document.getElementById(
+          `nav-${appState.currentPage}`
+        );
+        if (initialNav) initialNav.classList.add("active");
+        else document.getElementById("nav-home").classList.add("active"); // Default to home
+      });
+    </script>
+  </body>
+</html>
